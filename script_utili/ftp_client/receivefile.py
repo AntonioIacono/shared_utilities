@@ -5,7 +5,7 @@ import threading
 
 def retr_file():
     print("1")
-    ftp.set_pasv(False)
+    ftp.set_pasv(True)
     command= ''.join(['RETR ', file_name])
     response = ftp.sendcmd(command)  # Replace>
     print(response)
@@ -35,7 +35,7 @@ if __name__ == "__main__":
         file_name = sys.argv[1]
         
     # FTP server details
-    ftp_host = '10.10.11.2'
+    ftp_host = '172.23.0.118'
     ftp_port = 21
     data_port = 25600  # The data channel port you want to use
     username = 'admin'
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     data_port = 25600
     data_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     data_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    data_socket.bind(('10.10.10.2', data_port))
+    data_socket.bind(('172.16.1.150', data_port))
     data_socket.listen(1) 
     try:
         # Connect to the FTP server
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         ftp.login(username, password)
     
         # Send a PORT command to specify the data channel port
-        data_host = '10.10.10.2'  # Replace with the appropriate data channel IP
+        data_host = '172.16.1.150'  # Replace with the appropriate data channel IP
         port_command = 'PORT {},{},{}'.format(','.join(data_host.split('.')), data_port // 256, data_port % 256)
         print(port_command)
         thread_receive_data = threading.Thread(target=data_connection)
