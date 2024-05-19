@@ -101,5 +101,5 @@ if __name__ == '__main__':
     xmpp.register_plugin('xep_0199') # XMPP Ping
 
     # Connect to the XMPP server and start processing XMPP stanzas.
-    xmpp.connect()
+    xmpp.connect(use_ssl=False, force_starttls=False,disable_starttls=True)
     xmpp.process()
