@@ -16,20 +16,20 @@ from argparse import ArgumentParser
 import slixmpp
 
 
-class SendMsgBot(slixmpp.ClientXMPP):
+class SendPrsBot(slixmpp.ClientXMPP):
 
     """
     A basic Slixmpp bot that will log in, send a message,
     and then log out.
     """
 
-    def __init__(self, jid, password, recipient, message):
+    def __init__(self, jid, password, recipient):
         slixmpp.ClientXMPP.__init__(self, jid, password)
 
         # The message we wish to send, and the JID that
         # will receive it.
         self.recipient = recipient
-        self.msg = message
+        #self.msg = message
 
         # The session_start event will be triggered when
         # the bot establishes its connection with the server
@@ -61,7 +61,7 @@ class SendMsgBot(slixmpp.ClientXMPP):
 
 if __name__ == '__main__':
     # Setup the command line arguments.
-    parser = ArgumentParser(description=SendMsgBot.__doc__)
+    parser = ArgumentParser(description=SendPrsBot.__doc__)
 
     # Output verbosity options.
     parser.add_argument("-q", "--quiet", help="set logging to ERROR",
@@ -78,8 +78,7 @@ if __name__ == '__main__':
                         help="password to use")
     parser.add_argument("-t", "--to", dest="to",
                         help="JID to send the message to")
-    parser.add_argument("-m", "--message", dest="message",
-                        help="message to send")
+
 
     args = parser.parse_args()
 
@@ -93,18 +92,18 @@ if __name__ == '__main__':
         args.password = "password"
     if args.to is None:
         args.to = "mcu@xmpp-server.sw1.multimedia.arpa"
-    if args.message is None:
-        args.message = "Message"
+
 
     # Setup the EchoBot and register plugins. Note that while plugins may
     # have interdependencies, the order in which you register them does
     # not matter.
-    xmpp = SendMsgBot(args.jid, args.password, args.to, args.message)
-    #xmpp.register_plugin('xep_0030') # Service Discovery
-    #xmpp.register_plugin('xep_0199') # XMPP Ping
+    xmpp = SendPrsBot(args.jid, args.password, args.to)
+    xmpp.register_plugin('xep_0030') # Service Discovery
+    xmpp.register_plugin('xep_0004') # Data Forms
+    xmpp.register_plugin('xep_0060') # PubSub
+    xmpp.register_plugin('xep_0199') # XMPP Ping
 
     # Connect to the XMPP server and start processing XMPP stanzas.
-    xmpp.connect(use_ssl=False, force_starttls=False,disable_starttls=True)
-    #xmpp.process(forever=False)
-    #xmpp.connect()
-    xmpp.process()
+    xmpp.connect()
+    xmpp.process(forever=False)
+

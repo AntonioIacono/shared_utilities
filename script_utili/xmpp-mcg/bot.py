@@ -38,6 +38,12 @@ class EchoBot(slixmpp.ClientXMPP):
         # MUC messages and error messages.
         self.add_event_handler("message", self.message)
 
+        # Custom event handler to capture token
+        self.add_event_handler("presence", self.presence)
+
+        # Variable to store the token
+        self.token = None
+
     async def start(self, event):
         """
         Process the session_start event.
@@ -54,6 +60,26 @@ class EchoBot(slixmpp.ClientXMPP):
         self.send_presence()
         await self.get_roster()
 
+
+    def presence(self, pres):
+        """
+        Process incoming presence stanzas to capture a token.
+
+        Arguments:
+             pres -- The received presence stanza.
+        """
+
+        #print(pres)
+        # JID that must be saved:
+        print("JID:")
+        #if 'from' in pres['status']:
+        token = str(pres['from'])
+        filename = "my_token.txt"
+
+        with open(filename, 'w') as file:
+            file.write(token)
+
+
     def message(self, msg):
         """
         Process incoming message stanzas. Be aware that this also
@@ -67,8 +93,9 @@ class EchoBot(slixmpp.ClientXMPP):
                    how it may be used.
         """
         if msg['type'] in ('chat', 'normal'):
-            msg.reply("Thanks for sending\n%(body)s" % msg).send()
-
+            #msg.reply("Thanks for sending\n%(body)s" % msg).send()
+            print(msg)
+        print(msg)
 
 if __name__ == '__main__':
     # Setup the command line arguments.
@@ -95,9 +122,9 @@ if __name__ == '__main__':
                         format='%(levelname)-8s %(message)s')
 
     if args.jid is None:
-        args.jid = input("Username: ")
+        args.jid = "mcg@xmpp-server.sw1.multimedia.arpa"
     if args.password is None:
-        args.password = getpass("Password: ")
+        args.password = "password"
 
     # Setup the EchoBot and register plugins. Note that while plugins may
     # have interdependencies, the order in which you register them does
