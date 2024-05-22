@@ -32,11 +32,12 @@ function presence_msg {
 
 
 #START
+
 start_bot &
 
 while true; do
 
     ftp_send & 
-#    presence_msg & 
+    presence_msg & 
     wait
 done
