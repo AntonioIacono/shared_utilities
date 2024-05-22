@@ -53,6 +53,7 @@ class EchoBot(slixmpp.ClientXMPP):
         """
         self.send_presence()
         await self.get_roster()
+        print(self.presence_status())
 
     def message(self, msg):
         """
@@ -67,8 +68,9 @@ class EchoBot(slixmpp.ClientXMPP):
                    how it may be used.
         """
         if msg['type'] in ('chat', 'normal'):
-            msg.reply("Thanks for sending\n%(body)s" % msg).send()
-
+            #msg.reply("Thanks for sending\n%(body)s" % msg).send()
+            print(msg)
+        print(msg)
 
 if __name__ == '__main__':
     # Setup the command line arguments.
@@ -95,9 +97,9 @@ if __name__ == '__main__':
                         format='%(levelname)-8s %(message)s')
 
     if args.jid is None:
-        args.jid = input("Username: ")
+        args.jid = "mcu@xmpp-server.sw1.multimedia.arpa"
     if args.password is None:
-        args.password = getpass("Password: ")
+        args.password = "password"
 
     # Setup the EchoBot and register plugins. Note that while plugins may
     # have interdependencies, the order in which you register them does
