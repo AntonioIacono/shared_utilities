@@ -57,24 +57,27 @@ class EchoBot(slixmpp.ClientXMPP):
                      event does not provide any additional
                      data.
         """
+        self.send_presence()
+        await self.get_roster()
 
-    self.send_presence()
-    await self.get_roster()
 
     def presence(self, pres):
-    """
-    Process incoming presence stanzas to capture a token.
-    
-    Arguments:
-        pres -- The received presence stanza.
-    """
-    # Assuming the token is in a custom attribute 'token'
-    if 'token' in pres['status']:
-        self.token = pres['status']['token']
-        # Save the token to a file
-        with open('token.txt', 'w') as f:
-            f.write(self.token)
-        logging.info(f"Token received and saved: {self.token}")
+        """
+        Process incoming presence stanzas to capture a token.
+
+        Arguments:
+             pres -- The received presence stanza.
+        """
+
+        #print(pres)
+        # JID that must be saved:
+        print("JID:")
+        #if 'from' in pres['status']:
+        token = str(pres['from'])
+        filename = "my_token.txt"
+
+        with open(filename, 'w') as file:
+            file.write(token)
 
 
     def message(self, msg):

@@ -51,8 +51,8 @@ class SendMsgBot(slixmpp.ClientXMPP):
                      event does not provide any additional
                      data.
         """
-        self.send_presence()
-        await self.get_roster()
+        #self.send_presence()
+        #await self.get_roster()
 
         self.send_message(mto=self.recipient,
                           mbody=self.msg,
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Setup logging.
-    logging.basicConfig(level=args.loglevel, format='%(levelname)-8s %(message)s')
+    logging.basicConfig(level=args.loglevel, format='%(levelname)-8s %(message)s', filename='token.log',filemode='w')
 
     if args.jid is None:
         args.jid = "mcu@xmpp-server.sw1.multimedia.arpa"
@@ -96,16 +96,20 @@ if __name__ == '__main__':
         args.to = "mcg@xmpp-server.sw1.multimedia.arpa"
     if args.message is None:
         args.message = "Ground_Notify_Message"
-
+    token = ""
+    filename = "my_token.txt"
+    with open(filename, 'r') as file:
+        token = file.read()
+    print(token)
     # Setup the EchoBot and register plugins. Note that while plugins may
     # have interdependencies, the order in which you register them does
     # not matter.
-    xmpp = SendMsgBot(args.jid, args.password, args.to, args.message)
+    xmpp = SendMsgBot(token, args.password, args.to, args.message)
     #xmpp.register_plugin('xep_0030') # Service Discovery
     #xmpp.register_plugin('xep_0199') # XMPP Ping
 
     # Connect to the XMPP server and start processing XMPP stanzas.
-    #xmpp.connect(use_ssl=False, force_starttls=False,disable_starttls=True)
+    xmpp.connect(use_ssl=False, force_starttls=False,disable_starttls=True)
     #xmpp.process(forever=False)
-    xmpp.connect()
+    #xmpp.connect()
     xmpp.process(forever=False)
