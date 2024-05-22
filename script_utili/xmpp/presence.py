@@ -51,12 +51,10 @@ class SendMsgBot(slixmpp.ClientXMPP):
                      event does not provide any additional
                      data.
         """
-        self.send_presence()
+        self.send_presence(pto=self.recipient)
         await self.get_roster()
 
-        self.send_message(mto=self.recipient,
-                          mbody=self.msg,
-                          mtype='chat')
+        #self.send_message(mto=self.recipient, mbody=self.msg, mtype='chat')
 
         self.disconnect()
 
@@ -90,13 +88,13 @@ if __name__ == '__main__':
                         format='%(levelname)-8s %(message)s')
 
     if args.jid is None:
-        args.jid = input("Username: ")
+        args.jid = "mcg@xmpp-server.sw1.multimedia.arpa"
     if args.password is None:
-        args.password = getpass("Password: ")
+        args.password = "password"
     if args.to is None:
-        args.to = input("Send To: ")
+        args.to = "mcu@xmpp-server.sw1.multimedia.arpa"
     if args.message is None:
-        args.message = input("Message: ")
+        args.message = "Message"
 
     # Setup the EchoBot and register plugins. Note that while plugins may
     # have interdependencies, the order in which you register them does
@@ -109,4 +107,4 @@ if __name__ == '__main__':
     xmpp.connect(use_ssl=False, force_starttls=False,disable_starttls=True)
     #xmpp.process(forever=False)
     #xmpp.connect()
-    xmpp.process(forever=False)
+    xmpp.process()
