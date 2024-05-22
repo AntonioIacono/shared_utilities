@@ -16,20 +16,15 @@ from argparse import ArgumentParser
 import slixmpp
 
 
-class SendMsgBot(slixmpp.ClientXMPP):
+class EchoBot(slixmpp.ClientXMPP):
 
     """
-    A basic Slixmpp bot that will log in, send a message,
-    and then log out.
+    A simple Slixmpp bot that will echo messages it
+    receives, along with a short thank you message.
     """
 
-    def __init__(self, jid, password, recipient, message):
+    def __init__(self, jid, password):
         slixmpp.ClientXMPP.__init__(self, jid, password)
-
-        # The message we wish to send, and the JID that
-        # will receive it.
-        self.recipient = recipient
-        self.msg = message
 
         # The session_start event will be triggered when
         # the bot establishes its connection with the server
@@ -37,6 +32,11 @@ class SendMsgBot(slixmpp.ClientXMPP):
         # listen for this event so that we we can initialize
         # our roster.
         self.add_event_handler("session_start", self.start)
+
+        # The message event is triggered whenever a message
+        # stanza is received. Be aware that that includes
+        # MUC messages and error messages.
+        self.add_event_handler("message", self.message)
 
     async def start(self, event):
         """
@@ -51,19 +51,29 @@ class SendMsgBot(slixmpp.ClientXMPP):
                      event does not provide any additional
                      data.
         """
-        self.send_presence()
-        await self.get_roster()
+        #self.send_presence()
+        #await self.get_roster()
 
-        self.send_message(mto=self.recipient,
-                          mbody=self.msg,
-                          mtype='chat')
+    def message(self, msg):
+        """
+        Process incoming message stanzas. Be aware that this also
+        includes MUC messages and error messages. It is usually
+        a good idea to check the messages's type before processing
+        or sending replies.
 
-        self.disconnect()
-
+        Arguments:
+            msg -- The received message stanza. See the documentation
+                   for stanza objects and the Message stanza to see
+                   how it may be used.
+        """
+        if msg['type'] in ('chat', 'normal'):
+            #msg.reply("Thanks for sending\n%(body)s" % msg).send()
+            print(msg)
+        print(msg)
 
 if __name__ == '__main__':
     # Setup the command line arguments.
-    parser = ArgumentParser(description=SendMsgBot.__doc__)
+    parser = ArgumentParser(description=EchoBot.__doc__)
 
     # Output verbosity options.
     parser.add_argument("-q", "--quiet", help="set logging to ERROR",
@@ -78,34 +88,28 @@ if __name__ == '__main__':
                         help="JID to use")
     parser.add_argument("-p", "--password", dest="password",
                         help="password to use")
-    parser.add_argument("-t", "--to", dest="to",
-                        help="JID to send the message to")
-    parser.add_argument("-m", "--message", dest="message",
-                        help="message to send")
 
     args = parser.parse_args()
 
     # Setup logging.
-    logging.basicConfig(level=args.loglevel, format='%(levelname)-8s %(message)s')
+    #logging.basicConfig(level=args.loglevel,
+                        format='%(levelname)-8s %(message)s')
 
     if args.jid is None:
         args.jid = "mcu@xmpp-server.sw1.multimedia.arpa"
     if args.password is None:
-        args.password = "password: "
-    if args.to is None:
-        args.to = "mcg@xmpp-server.sw1.multimedia.arpa"
-    if args.message is None:
-        args.message = "Ground_Notify_Message"
+        args.password = "password"
 
     # Setup the EchoBot and register plugins. Note that while plugins may
     # have interdependencies, the order in which you register them does
     # not matter.
-    xmpp = SendMsgBot(args.jid, args.password, args.to, args.message)
-    #xmpp.register_plugin('xep_0030') # Service Discovery
-    #xmpp.register_plugin('xep_0199') # XMPP Ping
+    xmpp = EchoBot(args.jid, args.password)
+    xmpp.register_plugin('xep_0030') # Service Discovery
+    xmpp.register_plugin('xep_0004') # Data Forms
+    xmpp.register_plugin('xep_0060') # PubSub
+    xmpp.register_plugin('xep_0199') # XMPP Ping
 
     # Connect to the XMPP server and start processing XMPP stanzas.
     #xmpp.connect(use_ssl=False, force_starttls=False,disable_starttls=True)
-    #xmpp.process(forever=False)
     xmpp.connect()
-    xmpp.process(forever=False)
+    xmpp.process()
