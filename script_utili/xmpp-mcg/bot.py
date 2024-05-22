@@ -38,11 +38,6 @@ class EchoBot(slixmpp.ClientXMPP):
         # MUC messages and error messages.
         self.add_event_handler("message", self.message)
 
-        # Custom event handler to capture token
-        self.add_event_handler("presence", self.presence)
-
-        # Variable to store the token
-        self.token = None
 
     async def start(self, event):
         """
@@ -59,25 +54,6 @@ class EchoBot(slixmpp.ClientXMPP):
         """
         self.send_presence()
         await self.get_roster()
-
-
-    def presence(self, pres):
-        """
-        Process incoming presence stanzas to capture a token.
-
-        Arguments:
-             pres -- The received presence stanza.
-        """
-
-        #print(pres)
-        # JID that must be saved:
-        print("JID:")
-        #if 'from' in pres['status']:
-        token = str(pres['from'])
-        filename = "my_token.txt"
-
-        with open(filename, 'w') as file:
-            file.write(token)
 
 
     def message(self, msg):
