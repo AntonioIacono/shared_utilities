@@ -2,8 +2,7 @@ import socket
 import struct
 import time
 import argparse
-
-
+import threading
 
 def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset,lifeenabled, checkenabled, life):
     while True:
@@ -61,7 +60,9 @@ def send_udp_packet(ip_address, port, payload, time_value):
         # Chiusura del socket
         udp_socket.close()
 
-
+def start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life):
+    thread = threading.Thread(target=createMessage, args=(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life))
+    thread.start()
     
 if __name__ == '__main__':
 
@@ -103,7 +104,11 @@ if __name__ == '__main__':
     port = 17224
     dataset = "00000000000000000000000000000001111111111111111111111111101111111110101010110101101010101011111"
     print("Create Message")
-    createMessage(str(ip_multicast),port,int(dataset_life),4035626,
-                  1,29264,int(comid),0,
-                  0,4,0,int(comid),
-                  str(ip_multicast),3572351821,dataset,1,1,0)
+    num_threads = 5  # Number of threads to run
+    for _ in range(num_threads):
+        start_thread(ip_multicast, port, dataset_life, 4035626, 1, 29264, comid, 0, 0, 4, 0, comid, ip_multicast, 3572351821, dataset, True, True, 0)
+        port += 1
+    #createMessage(str(ip_multicast),port,int(dataset_life),4035626,
+    #              1,29264,int(comid),0,
+    #              0,4,0,int(comid),
+    #              str(ip_multicast),3572351821,dataset,1,1,0)
