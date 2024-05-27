@@ -1,6 +1,8 @@
+import socket
 import http.server
 import os
 import time
+import base64
 
 class MJPEGFileServer(http.server.BaseHTTPRequestHandler):
 
@@ -65,10 +67,17 @@ class MJPEGFileServer(http.server.BaseHTTPRequestHandler):
             self.wfile.write(f"Errore durante lo streaming del video: {str(e)}".encode())
 
 if __name__ == '__main__':
-    server_address = ('', 8080)  # Indirizzo IP e porta del server
+    server_address = ('', 8080)  # Cambia la porta se necessario
     httpd = http.server.HTTPServer(server_address, MJPEGFileServer)
+    
+    # Set the socket option for DSCP
+    DSCP_VALUE = 0x1C  # DSCP 7 is equivalent to binary 00111000, which is 0x1C
+    httpd.socket.setsockopt(socket.SOL_IP, socket.IP_TOS, DSCP_VALUE)
+    
+    # Configura il socket per riutilizzare l'indirizzo
+    httpd.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    print("Server in ascolto sulla porta 80...")
+    print(f"Server in ascolto sulla porta {server_address[1]}...")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
