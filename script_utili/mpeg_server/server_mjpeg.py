@@ -71,7 +71,7 @@ if __name__ == '__main__':
     httpd = http.server.HTTPServer(server_address, MJPEGFileServer)
     
     # Set the socket option for DSCP
-    DSCP_VALUE = 0x1C  # DSCP 7 is equivalent to binary 00111000, which is 0x1C
+    DSCP_VALUE = 0xa4  # DSCP 7 is equivalent to binary 00111000, which is 0x1C
     httpd.socket.setsockopt(socket.SOL_IP, socket.IP_TOS, DSCP_VALUE)
     
     # Configura il socket per riutilizzare l'indirizzo
