@@ -12,6 +12,7 @@
 import logging
 from getpass import getpass
 from argparse import ArgumentParser
+import socket
 
 import slixmpp
 
@@ -29,7 +30,7 @@ class EchoBot(slixmpp.ClientXMPP):
         # The session_start event will be triggered when
         # the bot establishes its connection with the server
         # and the XML streams are ready for use. We want to
-        # listen for this event so that we we can initialize
+        # listen for this event so that we can initialize
         # our roster.
         self.add_event_handler("session_start", self.start)
 
@@ -37,7 +38,6 @@ class EchoBot(slixmpp.ClientXMPP):
         # stanza is received. Be aware that that includes
         # MUC messages and error messages.
         self.add_event_handler("message", self.message)
-
 
     async def start(self, event):
         """
@@ -55,7 +55,6 @@ class EchoBot(slixmpp.ClientXMPP):
         self.send_presence()
         await self.get_roster()
 
-
     def message(self, msg):
         """
         Process incoming message stanzas. Be aware that this also
@@ -69,9 +68,22 @@ class EchoBot(slixmpp.ClientXMPP):
                    how it may be used.
         """
         if msg['type'] in ('chat', 'normal'):
-            #msg.reply("Thanks for sending\n%(body)s" % msg).send()
+            # msg.reply("Thanks for sending\n%(body)s" % msg).send()
             print(msg)
         print(msg)
+
+    def connect(self, *args, **kwargs):
+        """
+        Override the connect method to set the DSCP value on the socket.
+        """
+        sock = super().connect(*args, **kwargs)
+
+        # Set the DSCP value to 7 (which is 0x1C in hexadecimal)
+        DSCP_VALUE = 0x1C  # DSCP 7 is equivalent to binary 00111000, which is 0x1C
+        sock.setsockopt(socket.SOL_IP, socket.IP_TOS, DSCP_VALUE)
+
+        return sock
+
 
 if __name__ == '__main__':
     # Setup the command line arguments.
@@ -106,12 +118,11 @@ if __name__ == '__main__':
     # have interdependencies, the order in which you register them does
     # not matter.
     xmpp = EchoBot(args.jid, args.password)
-    xmpp.register_plugin('xep_0030') # Service Discovery
-    xmpp.register_plugin('xep_0004') # Data Forms
-    xmpp.register_plugin('xep_0060') # PubSub
-    xmpp.register_plugin('xep_0199') # XMPP Ping
+    xmpp.register_plugin('xep_0030')  # Service Discovery
+    xmpp.register_plugin('xep_0004')  # Data Forms
+    xmpp.register_plugin('xep_0060')  # PubSub
+    xmpp.register_plugin('xep_0199')  # XMPP Ping
 
     # Connect to the XMPP server and start processing XMPP stanzas.
-    #xmpp.connect(use_ssl=False, force_starttls=False,disable_starttls=True)
     xmpp.connect()
     xmpp.process()
