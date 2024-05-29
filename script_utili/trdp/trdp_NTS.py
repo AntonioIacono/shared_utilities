@@ -67,25 +67,25 @@ def start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, m
 if __name__ == '__main__':
 
     # Setup the command line arguments.
-    parser = argparse.ArgumentParser(description='Invia pacchetti UDP con i parametri specificati.')
-    parser.add_argument('-i', '--ip', dest='ipAddress', type=str, required=False, help='Indirizzo IP Multicast')
-    parser.add_argument('-p', '--port', dest='port', type=int, required=False, help='Porta UDP')
-    parser.add_argument('-t', '--time', dest='timeValue', type=int, required=False, help='Valore di tempo tra i pacchetti')
-    parser.add_argument('-s', '--sequence', dest='sequenceCounter', type=int, default=0, required=False, help='Contatore di sequenza iniziale')
-    parser.add_argument('--protocol', dest='protocolVersion', type=int, required=False, help='Versione del protocollo')
-    parser.add_argument('--msgtype', dest='msgType', type=int, required=False, help='Tipo di messaggio')
-    parser.add_argument('--comid', dest='comId', type=int, required=False, help='ID di comunicazione')
+    parser = argparse.ArgumentParser(description='Send UDP packets with the specified parameters.')
+    parser.add_argument('-i', '--ip', dest='ipAddress', type=str, required=False, help='IP Multicast Address')
+    parser.add_argument('-p', '--port', dest='port', type=int, required=False, help='Port UDP')
+    parser.add_argument('-t', '--time', dest='timeValue', type=int, required=False, help='Time value between packets')
+    parser.add_argument('-s', '--sequence', dest='sequenceCounter', type=int, default=0, required=False, help='Initial sequence counter value')
+    parser.add_argument('--protocol', dest='protocolVersion', type=int, required=False, help='Protocol version')
+    parser.add_argument('--msgtype', dest='msgType', type=int, required=False, help='Message type')
+    parser.add_argument('--comid', dest='comId', type=int, required=False, help='Comunication ID')
     parser.add_argument('--etb', dest='etbTopoCnt', type=int, default=0, required=False, help='ETB Topo Counter')
     parser.add_argument('--optrn', dest='opTrnTopoCnt', type=int, default=0, required=False, help='Op Trn Topo Counter')
-    parser.add_argument('--length', dest='datasetLength', type=int, required=False, help='Lunghezza del dataset')
-    parser.add_argument('--reserved', dest='reserved01', type=int, default=0, required=False, help='Riservato')
-    parser.add_argument('--replyid', dest='replyComId', type=int, required=False, help='ID di risposta')
-    parser.add_argument('--replyip', dest='replyIpAddress', type=str, required=False, help='Indirizzo IP di risposta')
+    parser.add_argument('--length', dest='datasetLength', type=int, required=False, help='Dataset length')
+    parser.add_argument('--reserved', dest='reserved01', type=int, default=0, required=False, help='Reserved')
+    parser.add_argument('--replyid', dest='replyComId', type=int, required=False, help='Comunication ID reply')
+    parser.add_argument('--replyip', dest='replyIpAddress', type=str, required=False, help='IP address reply')
     parser.add_argument('--fcs', dest='headerFcs', type=int, required=False, help='Header FCS')
-    parser.add_argument('--dataset', dest='dataset', type=str, required=False, help='Dataset in formato binario')
-    parser.add_argument('--lifeenabled', action='store_true', required=False, help='Abilita incremento del campo life')
-    parser.add_argument('--checkenabled', action='store_true', required=False, help='Abilita il campo check')
-    parser.add_argument('--life', dest='life', type=int, default=0, required=False, help='Valore iniziale del campo life')
+    parser.add_argument('--dataset', dest='dataset', type=str, required=False, help='Binary dataset format')
+    parser.add_argument('--lifeenabled', action='store_true', required=False, help='Enable life field increment')
+    parser.add_argument('--checkenabled', action='store_true', required=False, help='Enable check field')
+    parser.add_argument('--life', dest='life', type=int, default=0, required=False, help='Initial value of field life')
 
     args = parser.parse_args()
 
@@ -98,17 +98,28 @@ if __name__ == '__main__':
     ip_multicast = "172.16.1.140"
     comid = 4003
     dataset_life = 200
-    #life_enabled = life_var.get()
-    #check = check_var.get()
-    #dataset_type = dataset_type_combobox.get()
     port = 17224
     dataset = "00000000000000000000000000000001111111111111111111111111101111111110101010110101101010101011111"
-    print("Create Message")
-    num_threads = 5  # Number of threads to run
-    for _ in range(num_threads):
-        start_thread(ip_multicast, port, dataset_life, 4035626, 1, 29264, comid, 0, 0, 4, 0, comid, ip_multicast, 3572351821, dataset, True, True, 0)
-        port += 1
-    #createMessage(str(ip_multicast),port,int(dataset_life),4035626,
-    #              1,29264,int(comid),0,
-    #              0,4,0,int(comid),
-    #              str(ip_multicast),3572351821,dataset,1,1,0)
+    
+    """
+    start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, 
+                 comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+                 replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life)
+    """
+    ##ComID 1301
+    start_thread(239.13.1.1, port, dataset_life, 4035626, 1, 29264,               
+                 1301, 0, 0, 4, 0, 1301,                                   
+                 ip_multicast, 3572351821, dataset, True, True, 0)         
+    ##ComID 1302
+    #start_thread(???, port, dataset_life, 4035626, 1, 29264,               
+    #             1302, 0, 0, 4, 0, 1302,                                   
+    #             ip_multicast, 3572351821, dataset, True, True, 0)          
+    ##ComID 1303
+    #start_thread(???, port, dataset_life, 4035626, 1, 29264,               
+    #             1303, 0, 0, 4, 0, 1303,                                   
+    #             ip_multicast, 3572351821, dataset, True, True, 0)          
+    
+    ##NO Thread
+    #createMessage(ip_multicast,port,dataset_life,4035626,1,29264,
+    #              comid, 0,0,4,0,comid,
+    #              ip_multicast, 3572351821,"00000000000000000000000000000001111111111111111111111111101111111110101010110101101010101011111",life_enabled,check,0)
