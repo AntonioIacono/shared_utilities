@@ -40,11 +40,21 @@ def parse_trdp_packet(data):
         'dataset': dataset
     }
 
-def forward_packet(data, forward_interface):
-    packet = Ether() / IP(data)
+def forward_packet(data, forward_interface, src_mac, dst_mac, src_ip, dst_ip, dst_port):
+    # Costruisci il pacchetto Ethernet
+    ether = Ether(src=src_mac, dst=dst_mac)
+    
+    # Costruisci il pacchetto IP
+    ip = IP(src=src_ip, dst=dst_ip)
+    
+    # Costruisci il pacchetto UDP
+    udp = UDP(sport=dst_port, dport=dst_port)
+    
+    # Invia il pacchetto
+    packet = ether / ip / udp / data
     sendp(packet, iface=forward_interface)
 
-def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface):
+def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface, src_mac, dst_mac, dst_port):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     udp_socket.bind((listen_ip, port))
@@ -63,7 +73,7 @@ def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface):
         for key, value in parsed_packet.items():
             print(f"{key}: {value}")
 
-        forward_packet(data, forward_interface)
+        forward_packet(data, forward_interface, src_mac, dst_mac, listen_ip, multicast_ip, dst_port)
 
 def packet_callback(packet):
     if IP in packet and (packet[IP].dst.startswith("224.") or packet[IP].dst.startswith("239.")):
@@ -71,9 +81,9 @@ def packet_callback(packet):
         if multicast_ip not in multicast_addresses:
             multicast_addresses.add(multicast_ip)
             print(f"Multicast traffic detected on: {multicast_ip}")
-            threading.Thread(target=listen_udp_multicast, args=(multicast_ip, port, listen_ip, forward_interface)).start()
+            threading.Thread(target=listen_udp_multicast, args=(multicast_ip, port, listen_ip, forward_interface, src_mac, dst_mac, dst_port)).start()
 
-def monitor_multicast_traffic(interface, port, listen_ip, forward_interface):
+def monitor_multicast_traffic(interface, port, listen_ip, forward_interface, src_mac, dst_mac, dst_port):
     print(f"Starting multicast traffic monitoring on interface: {interface}")
     sniff(iface=interface, prn=packet_callback, filter="ip multicast", store=0)
 
@@ -83,11 +93,17 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port', dest='port', type=int, required=True, help='Port to listen on')
     parser.add_argument('-l', '--listen', dest='listen_ip', type=str, default='0.0.0.0', help='Local IP address to listen on')
     parser.add_argument('-fi', '--forward_interface', dest='forward_interface', type=str, required=True, help='Network interface to forward traffic to')
+    parser.add_argument('--src_mac', dest='src_mac', type=str, required=True, help='Source MAC address for forwarded packets')
+    parser.add_argument('--dst_mac', dest='dst_mac', type=str, required=True, help='Destination MAC address for forwarded packets')
+    parser.add_argument('--dst_port', dest='dst_port', type=int, required=True, help='Destination port for forwarded packets')
 
     args = parser.parse_args()
     interface = args.interface
     port = args.port
     listen_ip = args.listen_ip
     forward_interface = args.forward_interface
+    src_mac = args.src_mac
+    dst_mac = args.dst_mac
+    dst_port = args.dst_port
 
-    monitor_multicast_traffic(interface, port, listen_ip, forward_interface)
+    monitor_multicast_traffic(interface, port, listen_ip, forward_interface, src_mac, dst_mac, dst_port)
