@@ -14,17 +14,17 @@ int num_multicast_addresses = 4;
 int detected_multicast_addresses[4] = {0};
 
 void forward_packet(char *data, int len, char *forward_interface, char *src_ip, char *dst_ip, int dst_port) {
-    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sockfd < 0) {
-        perror("socket");
-        return;
-    }
+    // Estrarre l'indirizzo IP di destinazione dal pacchetto originale
+    struct iphdr *ip_hdr = (struct iphdr *)(data + sizeof(struct ethhdr));
+    char dst_ip_from_packet[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(ip_hdr->daddr), dst_ip_from_packet, INET_ADDRSTRLEN);
 
+    // Utilizzare l'indirizzo IP di destinazione estratto per impostare l'indirizzo di destinazione nel pacchetto inoltrato
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(dst_port);
-    addr.sin_addr.s_addr = inet_addr(dst_ip);
+    addr.sin_addr.s_addr = inet_addr(dst_ip_from_packet); // Usare l'indirizzo IP di destinazione estratto
 
     // Set the source IP address in the IP header
     struct sockaddr_in source_addr;
@@ -32,19 +32,26 @@ void forward_packet(char *data, int len, char *forward_interface, char *src_ip, 
     source_addr.sin_family = AF_INET;
     source_addr.sin_addr.s_addr = inet_addr(src_ip);
 
+    // Invia il pacchetto inoltrato
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0) {
+        perror("socket");
+        return;
+    }
+
     if (bind(sockfd, (struct sockaddr*)&source_addr, sizeof(source_addr)) < 0) {
         perror("bind");
         close(sockfd);
         return;
     }
 
-    // Send the packet
     if (sendto(sockfd, data, len, 0, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
         perror("sendto");
     }
 
     close(sockfd);
 }
+
 
 void *listen_udp_multicast(void *arg) {
     char *multicast_ip = (char *)arg;
