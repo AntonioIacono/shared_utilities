@@ -12,6 +12,7 @@
 #include <linux/if_packet.h>
 #include <net/ethernet.h>
 #include <net/if.h>
+#include <sys/ioctl.h>
 
 #define BUFFER_SIZE 1024
 
