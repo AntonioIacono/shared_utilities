@@ -93,7 +93,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port', dest='port', type=int, default='17224', help='Port to listen on')
     parser.add_argument('-l', '--listen', dest='listen_ip', type=str, default='0.0.0.0', help='Local IP address to listen on')
     parser.add_argument('-fi', '--forward_interface', dest='forward_interface', type=str, default='ens5', help='Network interface to forward traffic to')
-    parser.add_argument('-fs', '--source_ip_forward', dest='source_ip_forward', type=str, required='172.23.0.13', help='IP address to forward traffic from')
+    parser.add_argument('-fs', '--source_ip_forward', dest='source_ip_forward', type=str, default='172.23.0.13', help='IP address to forward traffic from')
 
     args = parser.parse_args()
     interface = args.interface
