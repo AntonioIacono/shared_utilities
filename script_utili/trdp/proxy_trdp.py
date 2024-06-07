@@ -72,8 +72,9 @@ def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface, sourc
         parsed_packet = parse_trdp_packet(data)
         for key, value in parsed_packet.items():
             print(f"{key}: {value}")
-
-        forward_packet(data, forward_interface, source_ip_forward, multicast_ip, port)
+        # Check if comId is 4003 before forwarding
+        if parsed_packet['comId'] == 4003:
+            forward_packet(data, forward_interface, source_ip_forward, multicast_ip, port)
 
 def packet_callback(packet):
     if IP in packet and (packet[IP].dst.startswith("239.")):
