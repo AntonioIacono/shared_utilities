@@ -54,7 +54,7 @@ def forward_packet(data, forward_interface, src_ip, dst_ip, dst_port):
     packet = ether / ip / udp / data
     sendp(packet, iface=forward_interface, verbose=0)
 
-def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface):
+def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface, source_ip_forward):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     udp_socket.bind((listen_ip, port))
@@ -73,7 +73,7 @@ def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface):
         for key, value in parsed_packet.items():
             print(f"{key}: {value}")
 
-        forward_packet(data, forward_interface, listen_ip, multicast_ip, port)
+        forward_packet(data, forward_interface, source_ip_forward, multicast_ip, port)
 
 def packet_callback(packet):
     if IP in packet and (packet[IP].dst.startswith("224.") or packet[IP].dst.startswith("239.")):
@@ -89,15 +89,16 @@ def monitor_multicast_traffic(interface, port, listen_ip, forward_interface):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Monitor multicast traffic on a network interface and forward it to another physical interface')
-    parser.add_argument('-i', '--interface', dest='interface', type=str, required=True, help='Network interface to monitor')
-    parser.add_argument('-p', '--port', dest='port', type=int, required=True, help='Port to listen on')
+    parser.add_argument('-i', '--interface', dest='interface', type=str, default='ens3', help='Network interface to monitor')
+    parser.add_argument('-p', '--port', dest='port', type=int, default='17224', help='Port to listen on')
     parser.add_argument('-l', '--listen', dest='listen_ip', type=str, default='0.0.0.0', help='Local IP address to listen on')
-    parser.add_argument('-fi', '--forward_interface', dest='forward_interface', type=str, required=True, help='Network interface to forward traffic to')
+    parser.add_argument('-fi', '--forward_interface', dest='forward_interface', type=str, default='ens5', help='Network interface to forward traffic to')
+    parser.add_argument('-fs', '--forward_interface', dest='source_ip_forward', type=str, required='172.23.0.13', help='IP address to forward traffic from')
 
     args = parser.parse_args()
     interface = args.interface
     port = args.port
     listen_ip = args.listen_ip
     forward_interface = args.forward_interface
-
-    monitor_multicast_traffic(interface, port, listen_ip, forward_interface)
+    source_ip_forward = args.source_ip_forward
+    monitor_multicast_traffic(interface, port, listen_ip, forward_interface, source_ip_forward)
