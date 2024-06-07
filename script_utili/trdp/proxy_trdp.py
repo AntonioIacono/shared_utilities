@@ -73,7 +73,7 @@ def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface, sourc
         for key, value in parsed_packet.items():
             print(f"{key}: {value}")
         # Check if comId is 4003 before forwarding
-        if parsed_packet['comId'] == 4003:
+        if parsed_packet['comId'] == 40003:
             forward_packet(data, forward_interface, source_ip_forward, multicast_ip, port)
 
 def packet_callback(packet):
