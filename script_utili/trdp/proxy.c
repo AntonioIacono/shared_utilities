@@ -6,16 +6,17 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-
+#include <netinet/ip.h> 
 #define BUFFER_SIZE 1024
 
 char *multicast_addresses[] = {"239.18.1.1", "239.18.1.10", "239.13.1.1", "239.13.1.10"};
 int num_multicast_addresses = 4;
 int detected_multicast_addresses[4] = {0};
 
+
 void forward_packet(char *data, int len, char *forward_interface, char *src_ip, char *dst_ip, int dst_port) {
     // Estrarre l'indirizzo IP di destinazione dal pacchetto originale
-    struct iphdr *ip_hdr = (struct iphdr *)(data + sizeof(struct ethhdr));
+    struct iphdr *ip_hdr = (struct iphdr *)data; // Utilizziamo solo sizeof(struct iphdr)
     char dst_ip_from_packet[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(ip_hdr->daddr), dst_ip_from_packet, INET_ADDRSTRLEN);
 
@@ -51,6 +52,7 @@ void forward_packet(char *data, int len, char *forward_interface, char *src_ip, 
 
     close(sockfd);
 }
+
 
 
 void *listen_udp_multicast(void *arg) {
