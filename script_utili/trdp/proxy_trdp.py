@@ -2,7 +2,7 @@ import socket
 import struct
 import argparse
 import threading
-from scapy.all import sniff, IP
+from scapy.all import sniff, sendp, Ether, IP, UDP
 
 multicast_addresses = set()
 
@@ -40,12 +40,21 @@ def parse_trdp_packet(data):
         'dataset': dataset
     }
 
-def forward_packet(data, forward_ip, forward_port):
-    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udp_socket.sendto(data, (forward_ip, forward_port))
-    udp_socket.close()
+def forward_packet(data, forward_interface, src_ip, dst_ip, dst_port):
+    # Build the Ethernet packet
+    ether = Ether()
+    
+    # Build the IP packet
+    ip = IP(src=src_ip, dst=dst_ip)
+    
+    # Build the UDP packet
+    udp = UDP(dport=dst_port, sport=dst_port)
+    
+    # Send the packet
+    packet = ether / ip / udp / data
+    sendp(packet, iface=forward_interface, verbose=0)
 
-def listen_udp_multicast(multicast_ip, port, listen_ip, forward_ip, forward_port):
+def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     udp_socket.bind((listen_ip, port))
@@ -64,7 +73,7 @@ def listen_udp_multicast(multicast_ip, port, listen_ip, forward_ip, forward_port
         for key, value in parsed_packet.items():
             print(f"{key}: {value}")
 
-        forward_packet(data, forward_ip, forward_port)
+        forward_packet(data, forward_interface, listen_ip, multicast_ip, port)
 
 def packet_callback(packet):
     if IP in packet and (packet[IP].dst.startswith("224.") or packet[IP].dst.startswith("239.")):
@@ -72,25 +81,23 @@ def packet_callback(packet):
         if multicast_ip not in multicast_addresses:
             multicast_addresses.add(multicast_ip)
             print(f"Multicast traffic detected on: {multicast_ip}")
-            threading.Thread(target=listen_udp_multicast, args=(multicast_ip, port, listen_ip, forward_ip, forward_port)).start()
+            threading.Thread(target=listen_udp_multicast, args=(multicast_ip, port, listen_ip, forward_interface)).start()
 
-def monitor_multicast_traffic(interface, port, listen_ip, forward_ip, forward_port):
+def monitor_multicast_traffic(interface, port, listen_ip, forward_interface):
     print(f"Starting multicast traffic monitoring on interface: {interface}")
     sniff(iface=interface, prn=packet_callback, filter="ip multicast", store=0)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Monitor multicast traffic on a network interface and forward it to another interface')
+    parser = argparse.ArgumentParser(description='Monitor multicast traffic on a network interface and forward it to another physical interface')
     parser.add_argument('-i', '--interface', dest='interface', type=str, required=True, help='Network interface to monitor')
     parser.add_argument('-p', '--port', dest='port', type=int, required=True, help='Port to listen on')
     parser.add_argument('-l', '--listen', dest='listen_ip', type=str, default='0.0.0.0', help='Local IP address to listen on')
-    parser.add_argument('-f', '--forward_ip', dest='forward_ip', type=str, required=True, help='IP address to forward traffic to')
-    parser.add_argument('-fp', '--forward_port', dest='forward_port', type=int, required=True, help='Port to forward traffic to')
+    parser.add_argument('-fi', '--forward_interface', dest='forward_interface', type=str, required=True, help='Network interface to forward traffic to')
 
     args = parser.parse_args()
     interface = args.interface
     port = args.port
     listen_ip = args.listen_ip
-    forward_ip = args.forward_ip
-    forward_port = args.forward_port
+    forward_interface = args.forward_interface
 
-    monitor_multicast_traffic(interface, port, listen_ip, forward_ip, forward_port)
+    monitor_multicast_traffic(interface, port, listen_ip, forward_interface)
