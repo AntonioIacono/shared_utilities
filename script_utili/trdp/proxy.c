@@ -6,6 +6,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <netinet/ip.h>
+#include <netinet/udp.h>
+#include <ifaddrs.h>
 
 #define BUFFER_SIZE 1024
 
