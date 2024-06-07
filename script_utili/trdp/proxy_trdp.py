@@ -76,14 +76,14 @@ def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface, sourc
         forward_packet(data, forward_interface, source_ip_forward, multicast_ip, port)
 
 def packet_callback(packet):
-    if IP in packet and (packet[IP].dst.startswith("224.") or packet[IP].dst.startswith("239.")):
+    if IP in packet and (packet[IP].dst.startswith("239.")):
         multicast_ip = packet[IP].dst
         if multicast_ip not in multicast_addresses:
             multicast_addresses.add(multicast_ip)
             print(f"Multicast traffic detected on: {multicast_ip}")
-            threading.Thread(target=listen_udp_multicast, args=(multicast_ip, port, listen_ip, forward_interface)).start()
+            threading.Thread(target=listen_udp_multicast, args=(multicast_ip, port, listen_ip, forward_interface, source_ip_forward)).start()
 
-def monitor_multicast_traffic(interface, port, listen_ip, forward_interface):
+def monitor_multicast_traffic(interface, port, listen_ip, forward_interface,source_ip_forward):
     print(f"Starting multicast traffic monitoring on interface: {interface}")
     sniff(iface=interface, prn=packet_callback, filter="ip multicast", store=0)
 
