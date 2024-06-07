@@ -79,7 +79,7 @@ def monitor_multicast_traffic(interface, port, listen_ip, forward_ip, forward_po
     sniff(iface=interface, prn=packet_callback, filter="ip multicast", store=0)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Monitor multicast traffic on a network interface and forward it')
+    parser = argparse.ArgumentParser(description='Monitor multicast traffic on a network interface and forward it to another interface')
     parser.add_argument('-i', '--interface', dest='interface', type=str, required=True, help='Network interface to monitor')
     parser.add_argument('-p', '--port', dest='port', type=int, required=True, help='Port to listen on')
     parser.add_argument('-l', '--listen', dest='listen_ip', type=str, default='0.0.0.0', help='Local IP address to listen on')
