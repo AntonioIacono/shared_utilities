@@ -4,41 +4,9 @@ import argparse
 import threading
 from scapy.all import sniff, sendp, Ether, IP, UDP
 
-multicast_addresses = set()
-
-def parse_trdp_packet(data):
-    # Extract fields from TRDP packets
-    sequenceCounter = struct.unpack('>I', data[0:4])[0]
-    protocolVersion, msgType = struct.unpack('>HH', data[4:8])
-    comId = struct.unpack('>I', data[8:12])[0]
-    etbTopoCnt = struct.unpack('>I', data[12:16])[0]
-    opTrnTopoCnt = struct.unpack('>I', data[16:20])[0]
-    datasetLength = struct.unpack('>I', data[20:24])[0]
-    reserved01 = struct.unpack('>I', data[24:28])[0]
-    replyComId = struct.unpack('>I', data[28:32])[0]
-    replyIpAddress = '.'.join(map(str, data[32:36]))
-    headerFcs = struct.unpack('>I', data[36:40])[0]
-
-    life = data[40]
-    check = data[41]
-    dataset = ''.join(f'{byte:08b}' for byte in data[42:])
-
-    return {
-        'sequenceCounter': sequenceCounter,
-        'protocolVersion': protocolVersion,
-        'msgType': msgType,
-        'comId': comId,
-        'etbTopoCnt': etbTopoCnt,
-        'opTrnTopoCnt': opTrnTopoCnt,
-        'datasetLength': datasetLength,
-        'reserved01': reserved01,
-        'replyComId': replyComId,
-        'replyIpAddress': replyIpAddress,
-        'headerFcs': headerFcs,
-        'life': life,
-        'check': check,
-        'dataset': dataset
-    }
+# Set of multicast addresses to filter
+multicast_addresses = {"239.18.1.1", "239.18.1.10", "239.13.1.1", "239.13.1.10"}
+detected_multicast_addresses = set()
 
 def forward_packet(data, forward_interface, src_ip, dst_ip, dst_port):
     # Build the Ethernet packet
@@ -69,29 +37,36 @@ def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface, sourc
         data, addr = udp_socket.recvfrom(1024)
         print(f"Received packet from {addr} on {multicast_ip}")
 
-        parsed_packet = parse_trdp_packet(data)
-        for key, value in parsed_packet.items():
-            print(f"{key}: {value}")
-        # Check if comId is 4003 before forwarding
-        if parsed_packet['comId'] == 40003:
-            forward_packet(data, forward_interface, source_ip_forward, multicast_ip, port)
+        # Directly forward the packet
+        forward_packet(data, forward_interface, source_ip_forward, multicast_ip, port)
+
+def start_listening_thread(multicast_ip, port, listen_ip, forward_interface, source_ip_forward):
+    thread = threading.Thread(target=listen_udp_multicast, args=(multicast_ip, port, listen_ip, forward_interface, source_ip_forward))
+    thread.start()
+    return thread
 
 def packet_callback(packet):
-    if IP in packet and (packet[IP].dst.startswith("239.")):
+    if IP in packet and packet[IP].dst.startswith("239."):
         multicast_ip = packet[IP].dst
-        if multicast_ip not in multicast_addresses:
-            multicast_addresses.add(multicast_ip)
-            print(f"Multicast traffic detected on: {multicast_ip}")
-            threading.Thread(target=listen_udp_multicast, args=(multicast_ip, port, listen_ip, forward_interface, source_ip_forward)).start()
+        if multicast_ip not in detected_multicast_addresses:
+            detected_multicast_addresses.add(multicast_ip)
+            print(f"New multicast address detected: {multicast_ip}")
+            start_listening_thread(multicast_ip, port, listen_ip, forward_interface, source_ip_forward)
 
-def monitor_multicast_traffic(interface, port, listen_ip, forward_interface,source_ip_forward):
+def monitor_multicast_traffic(interface, port, listen_ip, forward_interface, source_ip_forward):
     print(f"Starting multicast traffic monitoring on interface: {interface}")
+    
+    # Start threads for predefined multicast addresses
+    for multicast_ip in multicast_addresses:
+        start_listening_thread(multicast_ip, port, listen_ip, forward_interface, source_ip_forward)
+    
+    # Monitor for new multicast addresses
     sniff(iface=interface, prn=packet_callback, filter="ip multicast", store=0)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Monitor multicast traffic on a network interface and forward it to another physical interface')
     parser.add_argument('-i', '--interface', dest='interface', type=str, default='ens3', help='Network interface to monitor')
-    parser.add_argument('-p', '--port', dest='port', type=int, default='17224', help='Port to listen on')
+    parser.add_argument('-p', '--port', dest='port', type=int, default=17224, help='Port to listen on')
     parser.add_argument('-l', '--listen', dest='listen_ip', type=str, default='0.0.0.0', help='Local IP address to listen on')
     parser.add_argument('-fi', '--forward_interface', dest='forward_interface', type=str, default='ens5', help='Network interface to forward traffic to')
     parser.add_argument('-fs', '--source_ip_forward', dest='source_ip_forward', type=str, default='172.23.0.13', help='IP address to forward traffic from')
@@ -102,4 +77,5 @@ if __name__ == '__main__':
     listen_ip = args.listen_ip
     forward_interface = args.forward_interface
     source_ip_forward = args.source_ip_forward
+
     monitor_multicast_traffic(interface, port, listen_ip, forward_interface, source_ip_forward)
