@@ -9,6 +9,9 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 #include <ifaddrs.h>
+#include <linux/if_packet.h>
+#include <net/ethernet.h>
+#include <net/if.h>
 
 #define BUFFER_SIZE 1024
 
@@ -19,20 +22,29 @@ int detected_multicast_addresses[4] = {0};  // Array to track detected addresses
 
 void forward_packet(char *data, int len, char *forward_interface, char *src_ip, char *dst_ip, int dst_port) {
     // Create a raw socket
-    int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+    int sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sockfd < 0) {
         perror("socket");
         return;
     }
 
-    struct sockaddr_in dest_addr;
-    memset(&dest_addr, 0, sizeof(dest_addr));
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_addr.s_addr = inet_addr(dst_ip);
-    dest_addr.sin_port = htons(dst_port);
+    struct ifreq if_idx;
+    memset(&if_idx, 0, sizeof(struct ifreq));
+    strncpy(if_idx.ifr_name, forward_interface, IFNAMSIZ - 1);
+    if (ioctl(sockfd, SIOCGIFINDEX, &if_idx) < 0) {
+        perror("SIOCGIFINDEX");
+        close(sockfd);
+        return;
+    }
+
+    struct sockaddr_ll sa;
+    memset(&sa, 0, sizeof(struct sockaddr_ll));
+    sa.sll_family = AF_PACKET;
+    sa.sll_ifindex = if_idx.ifr_ifindex;
+    sa.sll_protocol = htons(ETH_P_IP);
 
     // Send the packet
-    if (sendto(sockfd, data, len, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)) < 0) {
+    if (sendto(sockfd, data, len, 0, (struct sockaddr*)&sa, sizeof(struct sockaddr_ll)) < 0) {
         perror("sendto");
     }
 
