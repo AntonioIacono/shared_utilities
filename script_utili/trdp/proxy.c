@@ -21,6 +21,9 @@ char *multicast_addresses[] = {"239.18.1.1", "239.18.1.10", "239.13.1.1", "239.1
 int num_multicast_addresses = 4;
 int detected_multicast_addresses[4] = {0};  // Array to track detected addresses
 
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 void forward_packet(char *data, int len, char *forward_interface, char *src_ip, char *dst_ip, int dst_port) {
     // Create a raw socket
     int sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
@@ -43,6 +46,10 @@ void forward_packet(char *data, int len, char *forward_interface, char *src_ip, 
     sa.sll_family = AF_PACKET;
     sa.sll_ifindex = if_idx.ifr_ifindex;
     sa.sll_protocol = htons(ETH_P_IP);
+
+    // Set the source IP address in the IP header
+    struct iphdr *ip_hdr = (struct iphdr *)(data + sizeof(struct ethhdr));
+    ip_hdr->saddr = inet_addr(src_ip);
 
     // Send the packet
     if (sendto(sockfd, data, len, 0, (struct sockaddr*)&sa, sizeof(struct sockaddr_ll)) < 0) {
