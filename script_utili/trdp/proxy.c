@@ -6,53 +6,40 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-#include <netinet/ip.h>
-#include <netinet/udp.h>
-#include <ifaddrs.h>
-#include <linux/if_packet.h>
-#include <net/ethernet.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
 
 #define BUFFER_SIZE 1024
 
-// Set of multicast addresses to filter
 char *multicast_addresses[] = {"239.18.1.1", "239.18.1.10", "239.13.1.1", "239.13.1.10"};
 int num_multicast_addresses = 4;
-int detected_multicast_addresses[4] = {0};  // Array to track detected addresses
-
-#include <netinet/in.h>
-#include <arpa/inet.h>
+int detected_multicast_addresses[4] = {0};
 
 void forward_packet(char *data, int len, char *forward_interface, char *src_ip, char *dst_ip, int dst_port) {
-    // Create a raw socket
-    int sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0) {
         perror("socket");
         return;
     }
 
-    struct ifreq if_idx;
-    memset(&if_idx, 0, sizeof(struct ifreq));
-    strncpy(if_idx.ifr_name, forward_interface, IFNAMSIZ - 1);
-    if (ioctl(sockfd, SIOCGIFINDEX, &if_idx) < 0) {
-        perror("SIOCGIFINDEX");
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(dst_port);
+    addr.sin_addr.s_addr = inet_addr(dst_ip);
+
+    // Set the source IP address in the IP header
+    struct sockaddr_in source_addr;
+    memset(&source_addr, 0, sizeof(source_addr));
+    source_addr.sin_family = AF_INET;
+    source_addr.sin_addr.s_addr = inet_addr(src_ip);
+
+    if (bind(sockfd, (struct sockaddr*)&source_addr, sizeof(source_addr)) < 0) {
+        perror("bind");
         close(sockfd);
         return;
     }
 
-    struct sockaddr_ll sa;
-    memset(&sa, 0, sizeof(struct sockaddr_ll));
-    sa.sll_family = AF_PACKET;
-    sa.sll_ifindex = if_idx.ifr_ifindex;
-    sa.sll_protocol = htons(ETH_P_IP);
-
-    // Set the source IP address in the IP header
-    struct iphdr *ip_hdr = (struct iphdr *)(data + sizeof(struct ethhdr));
-    ip_hdr->saddr = inet_addr(src_ip);
-
     // Send the packet
-    if (sendto(sockfd, data, len, 0, (struct sockaddr*)&sa, sizeof(struct sockaddr_ll)) < 0) {
+    if (sendto(sockfd, data, len, 0, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
         perror("sendto");
     }
 
@@ -62,9 +49,6 @@ void forward_packet(char *data, int len, char *forward_interface, char *src_ip, 
 void *listen_udp_multicast(void *arg) {
     char *multicast_ip = (char *)arg;
     int port = 17224;
-    char *listen_ip = "0.0.0.0";
-    char *forward_interface = "ens5";
-    char *source_ip_forward = "172.23.0.13";
 
     int udp_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (udp_socket < 0) {
@@ -72,17 +56,10 @@ void *listen_udp_multicast(void *arg) {
         return NULL;
     }
 
-    int reuse = 1;
-    if (setsockopt(udp_socket, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
-        perror("setsockopt");
-        close(udp_socket);
-        return NULL;
-    }
-
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr(listen_ip);
+    addr.sin_addr.s_addr = INADDR_ANY; // Listen on any interface
     addr.sin_port = htons(port);
 
     if (bind(udp_socket, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
@@ -93,14 +70,14 @@ void *listen_udp_multicast(void *arg) {
 
     struct ip_mreq mreq;
     inet_aton(multicast_ip, &mreq.imr_multiaddr);
-    inet_aton(listen_ip, &mreq.imr_interface);
+    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
     if (setsockopt(udp_socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
         perror("setsockopt");
         close(udp_socket);
         return NULL;
     }
 
-    printf("Listening on %s:%d via %s\n", multicast_ip, port, listen_ip);
+    printf("Listening on %s:%d\n", multicast_ip, port);
 
     char buffer[BUFFER_SIZE];
     struct sockaddr_in client_addr;
@@ -113,10 +90,10 @@ void *listen_udp_multicast(void *arg) {
             continue;
         }
 
-        printf("Received packet from %s on %s\n", inet_ntoa(client_addr.sin_addr), multicast_ip);
+        printf("Received packet from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
         // Directly forward the packet
-        forward_packet(buffer, bytes_received, forward_interface, source_ip_forward, multicast_ip, port);
+        forward_packet(buffer, bytes_received, "ens5", "172.23.0.13", multicast_ip, port);
     }
 
     close(udp_socket);
@@ -125,35 +102,19 @@ void *listen_udp_multicast(void *arg) {
 
 void start_listening_thread(char *multicast_ip) {
     pthread_t thread;
-    char *ip_copy = strdup(multicast_ip);  // Allocate memory for the IP address
-    if (pthread_create(&thread, NULL, listen_udp_multicast, ip_copy) != 0) {
+    if (pthread_create(&thread, NULL, listen_udp_multicast, (void *)multicast_ip) != 0) {
         perror("pthread_create");
-        free(ip_copy);  // Free memory on error
     } else {
-        pthread_detach(thread);  // Detach thread to handle it independently
+        pthread_detach(thread);
     }
 }
 
 void packet_callback(char *packet, int len) {
-    struct iphdr *ip = (struct iphdr *)packet;
-    if (ip->version == 4 && (ntohl(ip->daddr) >> 24) == 0xef) {
-        char multicast_ip[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &ip->daddr, multicast_ip, INET_ADDRSTRLEN);
-        for (int i = 0; i < num_multicast_addresses; i++) {
-            if (strcmp(multicast_ip, multicast_addresses[i]) == 0) {
-                if (detected_multicast_addresses[i] == 0) {
-                    detected_multicast_addresses[i] = 1;
-                    printf("New multicast address detected: %s\n", multicast_ip);
-                    start_listening_thread(multicast_ip);
-                }
-                break;
-            }
-        }
-    }
+    // Placeholder for packet processing if needed
 }
 
-void monitor_multicast_traffic(char *interface, int port, char *listen_ip, char *forward_interface, char *source_ip_forward) {
-    printf("Starting multicast traffic monitoring on interface: %s\n", interface);
+void monitor_multicast_traffic() {
+    printf("Starting multicast traffic monitoring\n");
 
     // Start threads for predefined multicast addresses
     for (int i = 0; i < num_multicast_addresses; i++) {
@@ -169,18 +130,12 @@ void monitor_multicast_traffic(char *interface, int port, char *listen_ip, char 
         char dummy_packet[BUFFER_SIZE];
         int dummy_len = BUFFER_SIZE;
         packet_callback(dummy_packet, dummy_len);
-        sleep(1);  // Adjust as needed for actual implementation
+        sleep(1);
     }
 }
 
 int main(int argc, char *argv[]) {
-    char *interface = "ens3";
-    int port = 17224;
-    char *listen_ip = "0.0.0.0";
-    char *forward_interface = "ens5";
-    char *source_ip_forward = "172.23.0.13";
-
-    monitor_multicast_traffic(interface, port, listen_ip, forward_interface, source_ip_forward);
+    monitor_multicast_traffic();
 
     return 0;
 }
