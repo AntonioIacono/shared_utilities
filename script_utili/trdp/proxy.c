@@ -12,27 +12,28 @@
 // Set of multicast addresses to filter
 char *multicast_addresses[] = {"239.18.1.1", "239.18.1.10", "239.13.1.1", "239.13.1.10"};
 int num_multicast_addresses = 4;
-int detected_multicast_addresses[num_multicast_addresses];
+int detected_multicast_addresses[4] = {0};  // Array to track detected addresses
 
-void forward_packet(char *data, char *forward_interface, char *src_ip, char *dst_ip, int dst_port) {
-    // Build the Ethernet packet
-    // ...
+void forward_packet(char *data, int len, char *forward_interface, char *src_ip, char *dst_ip, int dst_port) {
+    // Create a raw socket
+    int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+    if (sockfd < 0) {
+        perror("socket");
+        return;
+    }
 
-    // Build the IP packet
-    struct in_addr src_addr, dst_addr;
-    inet_aton(src_ip, &src_addr);
-    inet_aton(dst_ip, &dst_addr);
-    struct iphdr *ip = malloc(sizeof(struct iphdr));
-    ip->saddr = src_addr.s_addr;
-    ip->daddr = dst_addr.s_addr;
-
-    // Build the UDP packet
-    struct udphdr *udp = malloc(sizeof(struct udphdr));
-    udp->dest = htons(dst_port);
-    udp->source = htons(dst_port);
+    struct sockaddr_in dest_addr;
+    memset(&dest_addr, 0, sizeof(dest_addr));
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_addr.s_addr = inet_addr(dst_ip);
+    dest_addr.sin_port = htons(dst_port);
 
     // Send the packet
-    // ...
+    if (sendto(sockfd, data, len, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)) < 0) {
+        perror("sendto");
+    }
+
+    close(sockfd);
 }
 
 void *listen_udp_multicast(void *arg) {
@@ -92,29 +93,30 @@ void *listen_udp_multicast(void *arg) {
         printf("Received packet from %s on %s\n", inet_ntoa(client_addr.sin_addr), multicast_ip);
 
         // Directly forward the packet
-        forward_packet(buffer, forward_interface, source_ip_forward, multicast_ip, port);
+        forward_packet(buffer, bytes_received, forward_interface, source_ip_forward, multicast_ip, port);
     }
 
     close(udp_socket);
     return NULL;
 }
 
-void *start_listening_thread(void *arg) {
-    char *multicast_ip = (char *)arg;
+void start_listening_thread(char *multicast_ip) {
     pthread_t thread;
-    if (pthread_create(&thread, NULL, listen_udp_multicast, multicast_ip) != 0) {
+    char *ip_copy = strdup(multicast_ip);  // Allocate memory for the IP address
+    if (pthread_create(&thread, NULL, listen_udp_multicast, ip_copy) != 0) {
         perror("pthread_create");
-        return NULL;
+        free(ip_copy);  // Free memory on error
+    } else {
+        pthread_detach(thread);  // Detach thread to handle it independently
     }
-    return (void *)thread;
 }
 
 void packet_callback(char *packet, int len) {
     struct iphdr *ip = (struct iphdr *)packet;
-    if (ip->version == 4 && ip->daddr >> 24 == 0xef) {
-        char *multicast_ip = inet_ntoa(*(struct in_addr *)&ip->daddr);
-        int i;
-        for (i = 0; i < num_multicast_addresses; i++) {
+    if (ip->version == 4 && (ntohl(ip->daddr) >> 24) == 0xef) {
+        char multicast_ip[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &ip->daddr, multicast_ip, INET_ADDRSTRLEN);
+        for (int i = 0; i < num_multicast_addresses; i++) {
             if (strcmp(multicast_ip, multicast_addresses[i]) == 0) {
                 if (detected_multicast_addresses[i] == 0) {
                     detected_multicast_addresses[i] = 1;
@@ -131,13 +133,21 @@ void monitor_multicast_traffic(char *interface, int port, char *listen_ip, char 
     printf("Starting multicast traffic monitoring on interface: %s\n", interface);
 
     // Start threads for predefined multicast addresses
-    int i;
-    for (i = 0; i < num_multicast_addresses; i++) {
+    for (int i = 0; i < num_multicast_addresses; i++) {
         start_listening_thread(multicast_addresses[i]);
     }
 
     // Monitor for new multicast addresses
-    // ...
+    // This is a placeholder for actual packet capture implementation
+    // For example, using pcap or similar library to capture packets and call packet_callback
+    while (1) {
+        // Simulate packet reception for demonstration purposes
+        // In practice, replace with actual packet capture and handling
+        char dummy_packet[BUFFER_SIZE];
+        int dummy_len = BUFFER_SIZE;
+        packet_callback(dummy_packet, dummy_len);
+        sleep(1);  // Adjust as needed for actual implementation
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -151,4 +161,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
