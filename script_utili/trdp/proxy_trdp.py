@@ -1,8 +1,10 @@
 import argparse
 import threading
 import struct
+import netifaces
 from scapy.all import sniff, sendp, Ether, IP, UDP, Raw
 from queue import Queue
+
 
 def parse_trdp_packet(data):
     sequenceCounter = struct.unpack('>I', data[0:4])[0]
@@ -37,6 +39,7 @@ def parse_trdp_packet(data):
     }
 
 def forward_packet(packet, forward_interface):
+    packet[IP].src = new_src_ip
     sendp(packet, iface=forward_interface, verbose=0)
 
 def packet_worker(q, forward_interface):
@@ -67,13 +70,20 @@ def monitor_and_forward(interface, forward_interface):
     # Callback per sniffing e invio dei pacchetti alla coda
     sniff(iface=interface, prn=lambda x: packet_queue.put(x), filter="udp and multicast", store=0)
 
+
+def get_interface_ip(interface):
+    """Ottieni l'indirizzo IP dell'interfaccia specificata."""
+    addresses = netifaces.ifaddresses(interface)
+    return addresses[netifaces.AF_INET][0]['addr']
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Simple script to sniff and forward UDP multicast traffic from one interface to another')
     parser.add_argument('-i', '--interface', dest='interface', type=str, default='ens3', help='Source network interface to sniff multicast UDP traffic from')
     parser.add_argument('-fi', '--forward_interface', dest='forward_interface', type=str, default='ens5', help='Network interface to forward traffic to')
-
+    parser.add_argument('-src', '--source_ip', dest='source_ip', type=str, default=get_interface_ip('ens5'), help='New source IP address for forwarded packets (optional)')
+    
     args = parser.parse_args()
     interface = args.interface
     forward_interface = args.forward_interface
-
+    source_ip = args.source_ip
     monitor_and_forward(interface, forward_interface)
