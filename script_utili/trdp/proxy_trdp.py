@@ -1,29 +1,17 @@
 import argparse
 import threading
 from scapy.all import sniff, sendp, Ether
-from queue import Queue
 
 def forward_packet(packet, forward_interface):
     sendp(packet, iface=forward_interface, verbose=0)
 
-def packet_worker(q, forward_interface):
-    while True:
-        packet = q.get()
-        forward_packet(packet, forward_interface)
-        q.task_done()
-
 def monitor_and_forward(interface, forward_interface):
     print(f"Monitoring and forwarding multicast UDP traffic from {interface} to {forward_interface}")
     
-    packet_queue = Queue()
+    def packet_callback(packet):
+        forward_packet(packet, forward_interface)
 
-    # Avvio i thread lavoratori
-    for _ in range(4):  # Possiamo regolare il numero di thread a seconda delle esigenze
-        t = threading.Thread(target=packet_worker, args=(packet_queue, forward_interface), daemon=True)
-        t.start()
-
-    # Callback per sniffing e invio dei pacchetti alla coda
-    sniff(iface=interface, prn=lambda x: packet_queue.put(x), filter="udp and multicast", store=0)
+    sniff(iface=interface, prn=packet_callback, filter="udp and multicast", store=0)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Simple script to sniff and forward UDP multicast traffic from one interface to another')
