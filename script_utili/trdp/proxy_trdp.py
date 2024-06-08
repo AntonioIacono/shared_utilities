@@ -59,11 +59,12 @@ def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface, sourc
         data, addr = raw_socket.recvfrom(65535)
         print(f"Received packet from {addr} on {multicast_ip}")
 
-        parsed_packet = parse_trdp_packet(data[28:])  # IP header is 20 bytes, UDP header is 8 bytes
-        for key, value in parsed_packet.items():
-            print(f"{key}: {value}")
-        if parsed_packet['comId'] == 40003:
-            forward_packet(data[28:], forward_interface, source_ip_forward, multicast_ip, port)
+        #parsed_packet = parse_trdp_packet(data[28:])  # IP header is 20 bytes, UDP header is 8 bytes
+        #for key, value in parsed_packet.items():
+        #    print(f"{key}: {value}")
+        #if parsed_packet['comId'] == 40003:
+        #    forward_packet(data[28:], forward_interface, source_ip_forward, multicast_ip, port)
+        forward_packet(data[28:], forward_interface, source_ip_forward, multicast_ip, port)
 
 def packet_callback(packet):
     if IP in packet and (packet[IP].dst.startswith("239.")):
