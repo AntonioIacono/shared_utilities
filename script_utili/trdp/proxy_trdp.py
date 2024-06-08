@@ -4,9 +4,7 @@ import struct
 from scapy.all import sniff, sendp, Ether, IP, UDP, Raw
 from queue import Queue
 
-
 def parse_trdp_packet(data):
-    # Extract fields from TRDP packets
     sequenceCounter = struct.unpack('>I', data[0:4])[0]
     protocolVersion, msgType = struct.unpack('>HH', data[4:8])
     comId = struct.unpack('>I', data[8:12])[0]
@@ -17,7 +15,6 @@ def parse_trdp_packet(data):
     replyComId = struct.unpack('>I', data[28:32])[0]
     replyIpAddress = '.'.join(map(str, data[32:36]))
     headerFcs = struct.unpack('>I', data[36:40])[0]
-
     life = data[40]
     check = data[41]
     dataset = ''.join(f'{byte:08b}' for byte in data[42:])
@@ -39,15 +36,14 @@ def parse_trdp_packet(data):
         'dataset': dataset
     }
 
-
 def forward_packet(packet, forward_interface):
     sendp(packet, iface=forward_interface, verbose=0)
 
 def packet_worker(q, forward_interface):
-    while True:   
+    while True:
         packet = q.get()
 
-         # Controlla se il pacchetto ha un payload Raw
+        # Controlla se il pacchetto ha un payload Raw
         if Raw in packet:
             data = bytes(packet[Raw])
 
@@ -56,18 +52,17 @@ def packet_worker(q, forward_interface):
             for key, value in parsed_packet.items():
                 print(f"{key}: {value}")
 
-        forward_packet(parsed_packet, forward_interface)
+        forward_packet(packet, forward_interface)
         q.task_done()
-
 
 def monitor_and_forward(interface, forward_interface):
     print(f"Monitoring and forwarding multicast UDP traffic from {interface} to {forward_interface}")
     
     # Aumentiamo la dimensione della coda
-    packet_queue = Queue(maxsize=10000000)  # Possiamo regolare la dimensione della coda a seconda delle esigenze
+    packet_queue = Queue(maxsize=1000)  # Possiamo regolare la dimensione della coda a seconda delle esigenze
 
     # Avvio i thread lavoratori
-    for _ in range(4):  # Possiamo regolare il numero di thread a seconda delle esigenze
+    for _ in range(8):  # Possiamo regolare il numero di thread a seconda delle esigenze
         t = threading.Thread(target=packet_worker, args=(packet_queue, forward_interface), daemon=True)
         t.start()
 
