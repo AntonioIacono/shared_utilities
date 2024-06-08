@@ -1,7 +1,7 @@
 import argparse
 import threading
 import struct
-from scapy.all import sniff, sendp, Ether
+from scapy.all import sniff, sendp, Ether, IP, UDP, Raw
 from queue import Queue
 
 
