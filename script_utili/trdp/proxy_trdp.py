@@ -2,7 +2,7 @@ import socket
 import struct
 import argparse
 import threading
-from scapy.all import sendp, Ether, IP, UDP
+from scapy.all import sniff, sendp, Ether, IP, UDP
 
 multicast_addresses = set()
 
