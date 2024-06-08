@@ -46,12 +46,9 @@ def packet_worker(q, forward_interface):
         # Controlla se il pacchetto ha un payload Raw
         if Raw in packet:
             data = bytes(packet[Raw])
-
-            # Effettua il parsing del pacchetto
+        # Effettua il parsing del pacchetto
             parsed_packet = parse_trdp_packet(data)
-            for key, value in parsed_packet.items():
-                print(f"{key}: {value}")
-
+            print(parsed_packet)
         forward_packet(packet, forward_interface)
         q.task_done()
 
