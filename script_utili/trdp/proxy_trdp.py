@@ -60,7 +60,7 @@ def monitor_and_forward(interface, forward_interface):
     packet_queue = Queue(maxsize=1000)  # Possiamo regolare la dimensione della coda a seconda delle esigenze
 
     # Avvio i thread lavoratori
-    for _ in range(42):  # Possiamo regolare il numero di thread a seconda delle esigenze
+    for _ in range(100):  # Possiamo regolare il numero di thread a seconda delle esigenze
         t = threading.Thread(target=packet_worker, args=(packet_queue, forward_interface), daemon=True)
         t.start()
 
