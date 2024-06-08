@@ -39,7 +39,7 @@ def parse_trdp_packet(data):
     }
 
 def forward_packet(packet, forward_interface):
-    packet[IP].src = new_src_ip
+    packet[IP].src = source_ip
     sendp(packet, iface=forward_interface, verbose=0)
 
 def packet_worker(q, forward_interface):
