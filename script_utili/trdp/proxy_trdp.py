@@ -2,9 +2,11 @@ import socket
 import struct
 import argparse
 import threading
+import queue
 from scapy.all import sniff, sendp, Ether, IP, UDP
 
 multicast_addresses = set()
+packet_queue = queue.Queue()
 
 def parse_trdp_packet(data):
     sequenceCounter = struct.unpack('>I', data[0:4])[0]
@@ -38,12 +40,15 @@ def parse_trdp_packet(data):
         'dataset': dataset
     }
 
-def forward_packet(data, forward_interface, src_ip, dst_ip, dst_port):
-    ether = Ether()
-    ip = IP(src=src_ip, dst=dst_ip)
-    udp = UDP(dport=dst_port, sport=dst_port)
-    packet = ether / ip / udp / data
-    sendp(packet, iface=forward_interface, verbose=0)
+def forward_packet():
+    while True:
+        data, forward_interface, src_ip, dst_ip, dst_port = packet_queue.get()
+        ether = Ether()
+        ip = IP(src=src_ip, dst=dst_ip)
+        udp = UDP(dport=dst_port, sport=dst_port)
+        packet = ether / ip / udp / data
+        sendp(packet, iface=forward_interface, verbose=0)
+        packet_queue.task_done()
 
 def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface, source_ip_forward):
     raw_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_UDP)
@@ -59,12 +64,11 @@ def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface, sourc
         data, addr = raw_socket.recvfrom(65535)
         print(f"Received packet from {addr} on {multicast_ip}")
 
-        #parsed_packet = parse_trdp_packet(data[28:])  # IP header is 20 bytes, UDP header is 8 bytes
-        #for key, value in parsed_packet.items():
-        #    print(f"{key}: {value}")
-        #if parsed_packet['comId'] == 40003:
-        #    forward_packet(data[28:], forward_interface, source_ip_forward, multicast_ip, port)
-        forward_packet(data[28:], forward_interface, source_ip_forward, multicast_ip, port)
+        parsed_packet = parse_trdp_packet(data[28:])  # IP header is 20 bytes, UDP header is 8 bytes
+        for key, value in parsed_packet.items():
+            print(f"{key}: {value}")
+        if parsed_packet['comId'] == 40003:
+            packet_queue.put((data[28:], forward_interface, source_ip_forward, multicast_ip, port))
 
 def packet_callback(packet):
     if IP in packet and (packet[IP].dst.startswith("239.")):
@@ -76,6 +80,7 @@ def packet_callback(packet):
 
 def monitor_multicast_traffic(interface, port, listen_ip, forward_interface, source_ip_forward):
     print(f"Starting multicast traffic monitoring on interface: {interface}")
+    threading.Thread(target=forward_packet, daemon=True).start()  # Start a thread to handle packet forwarding
     sniff(iface=interface, prn=packet_callback, filter="ip multicast", store=0)
 
 if __name__ == '__main__':
