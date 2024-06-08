@@ -46,7 +46,16 @@ def forward_packet(packet, forward_interface):
 def packet_worker(q, forward_interface):
     while True:   
         packet = q.get()
-        parsed_packet = parse_trdp_packet(packet)  # Effettua il parsing del pacchetto
+
+         # Controlla se il pacchetto ha un payload Raw
+        if Raw in packet:
+            data = bytes(packet[Raw])
+
+            # Effettua il parsing del pacchetto
+            parsed_packet = parse_trdp_packet(data)
+            for key, value in parsed_packet.items():
+                print(f"{key}: {value}")
+
         forward_packet(parsed_packet, forward_interface)
         q.task_done()
 
