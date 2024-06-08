@@ -45,7 +45,7 @@ def forward_packet(packet, forward_interface):
 def packet_worker(q, forward_interface):
     while True:   
         packet = q.get()
-        parsed_packet = parse_packet(packet)  # Effettua il parsing del pacchetto
+        parsed_packet = parse_trdp_packet(packet)  # Effettua il parsing del pacchetto
         forward_packet(parsed_packet, forward_interface)
         q.task_done()
 
