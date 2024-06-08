@@ -2,12 +2,11 @@ import socket
 import struct
 import argparse
 import threading
-from scapy.all import sniff, sendp, Ether, IP, UDP
+from scapy.all import sendp, Ether, IP, UDP
 
 multicast_addresses = set()
 
 def parse_trdp_packet(data):
-    # Extract fields from TRDP packets
     sequenceCounter = struct.unpack('>I', data[0:4])[0]
     protocolVersion, msgType = struct.unpack('>HH', data[4:8])
     comId = struct.unpack('>I', data[8:12])[0]
@@ -18,7 +17,6 @@ def parse_trdp_packet(data):
     replyComId = struct.unpack('>I', data[28:32])[0]
     replyIpAddress = '.'.join(map(str, data[32:36]))
     headerFcs = struct.unpack('>I', data[36:40])[0]
-
     life = data[40]
     check = data[41]
     dataset = ''.join(f'{byte:08b}' for byte in data[42:])
@@ -41,40 +39,31 @@ def parse_trdp_packet(data):
     }
 
 def forward_packet(data, forward_interface, src_ip, dst_ip, dst_port):
-    # Build the Ethernet packet
     ether = Ether()
-    
-    # Build the IP packet
     ip = IP(src=src_ip, dst=dst_ip)
-    
-    # Build the UDP packet
     udp = UDP(dport=dst_port, sport=dst_port)
-    
-    # Send the packet
     packet = ether / ip / udp / data
     sendp(packet, iface=forward_interface, verbose=0)
 
 def listen_udp_multicast(multicast_ip, port, listen_ip, forward_interface, source_ip_forward):
-    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    udp_socket.bind((listen_ip, port))
+    raw_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_UDP)
+    raw_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    raw_socket.bind((listen_ip, port))
 
-    # Join multicast group
     mreq = struct.pack('4s4s', socket.inet_aton(multicast_ip), socket.inet_aton(listen_ip))
-    udp_socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+    raw_socket.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
     print(f"Listening on {multicast_ip}:{port} via {listen_ip}")
 
     while True:
-        data, addr = udp_socket.recvfrom(1024)
+        data, addr = raw_socket.recvfrom(65535)
         print(f"Received packet from {addr} on {multicast_ip}")
 
-        parsed_packet = parse_trdp_packet(data)
+        parsed_packet = parse_trdp_packet(data[28:])  # IP header is 20 bytes, UDP header is 8 bytes
         for key, value in parsed_packet.items():
             print(f"{key}: {value}")
-        # Check if comId is 4003 before forwarding
         if parsed_packet['comId'] == 40003:
-            forward_packet(data, forward_interface, source_ip_forward, multicast_ip, port)
+            forward_packet(data[28:], forward_interface, source_ip_forward, multicast_ip, port)
 
 def packet_callback(packet):
     if IP in packet and (packet[IP].dst.startswith("239.")):
@@ -84,7 +73,7 @@ def packet_callback(packet):
             print(f"Multicast traffic detected on: {multicast_ip}")
             threading.Thread(target=listen_udp_multicast, args=(multicast_ip, port, listen_ip, forward_interface, source_ip_forward)).start()
 
-def monitor_multicast_traffic(interface, port, listen_ip, forward_interface,source_ip_forward):
+def monitor_multicast_traffic(interface, port, listen_ip, forward_interface, source_ip_forward):
     print(f"Starting multicast traffic monitoring on interface: {interface}")
     sniff(iface=interface, prn=packet_callback, filter="ip multicast", store=0)
 
