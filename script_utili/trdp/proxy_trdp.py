@@ -63,7 +63,7 @@ def proxy(multicast_ip, port, listen_ip, forward_interface, source_ip_forward):
         #for key, value in parsed_packet.items():
         #    print(f"{key}: {value}")
         #if parsed_packet['comId'] == 40003:
-            #forward_packet(data[28:], forward_interface, source_ip_forward, multicast_ip, port)
+        #    forward_packet(data[28:], forward_interface, source_ip_forward, multicast_ip, port)
         forward_packet(data[28:], forward_interface, source_ip_forward, multicast_ip, port)
 
 def packet_callback(packet):
