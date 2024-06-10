@@ -3,6 +3,8 @@ import threading
 from scapy.all import sniff, sendp, Ether
 from queue import Queue
 
+
+
 def forward_packet(packet, forward_interface):
     sendp(packet, iface=forward_interface, verbose=0)
 
