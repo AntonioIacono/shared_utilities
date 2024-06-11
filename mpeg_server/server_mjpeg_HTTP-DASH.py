@@ -1,6 +1,6 @@
 import os
 import subprocess
-from flask import Flask, Response, request
+from flask import Flask, Response, request, jsonify
 
 app = Flask(__name__)
 
@@ -13,25 +13,24 @@ if not os.path.exists(VIDEO_DIRECTORY):
 @app.route('/upload', methods=['POST'])
 def upload_video():
     if 'video' not in request.files:
-        return "No video part in the request", 400
+        return jsonify({"message": "No video part in the request"}), 400
 
     file = request.files['video']
     if file.filename == '':
-        return "No selected file", 400
+        return jsonify({"message": "No selected file"}), 400
 
     file_path = os.path.join(VIDEO_DIRECTORY, file.filename)
     file.save(file_path)
-    return "File uploaded successfully", 200
+    return jsonify({"message": "File uploaded successfully", "filename": file.filename}), 200
 
-@app.route('/stream')
-def stream_video():
-    video_path = os.path.join(VIDEO_DIRECTORY, 'video.mp4')  # Adjust to your uploaded video file
+@app.route('/stream/<filename>')
+def stream_video(filename):
+    video_path = os.path.join(VIDEO_DIRECTORY, filename)
 
     if not os.path.exists(video_path):
-        return "Video not found", 404
+        return jsonify({"message": "Video not found"}), 404
 
-    return Response(generate_stream(video_path),
-                    mimetype='video/mp4')
+    return Response(generate_stream(video_path), mimetype='video/mp4')
 
 def generate_stream(video_path):
     command = [
