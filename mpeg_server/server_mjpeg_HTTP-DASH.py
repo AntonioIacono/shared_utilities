@@ -33,31 +33,30 @@ def stream_video(filename):
     return Response(generate_stream(video_path), mimetype='video/mp4')
 
 def generate_stream(video_path):
+    command = [
+        'ffmpeg',
+        '-i', video_path,
+        '-f', 'mp4',
+        '-vcodec', 'libx264',
+        '-preset', 'fast',
+        '-r', '15',  # Frame rate
+        '-s', '1280x720',  # Resolution
+        '-b:v', '1M',  # Bitrate (adjust as needed)
+        '-bufsize', '2M',
+        '-pix_fmt', 'yuv420p',
+        '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
+        '-an',
+        '-sn',
+        'pipe:1'
+    ]
+
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
     while True:
-        command = [
-            'ffmpeg',
-            '-i', video_path,
-            '-f', 'mp4',
-            '-vcodec', 'libx264',
-            '-preset', 'fast',
-            '-r', '15',  # Frame rate
-            '-s', '1280x720',  # Resolution
-            '-b:v', '1M',  # Bitrate (adjust as needed)
-            '-bufsize', '2M',
-            '-pix_fmt', 'yuv420p',
-            '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
-            '-an',
-            '-sn',
-            'pipe:1'
-        ]
-
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        while True:
-            data = process.stdout.read(1024)
-            if not data:
-                break
-            yield data
+        data = process.stdout.read(1024)
+        if not data:
+            break
+        yield data
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
