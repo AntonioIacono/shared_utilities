@@ -12,7 +12,6 @@
 import logging
 from getpass import getpass
 from argparse import ArgumentParser
-import socket
 
 import slixmpp
 
@@ -68,21 +67,7 @@ class EchoBot(slixmpp.ClientXMPP):
                    how it may be used.
         """
         if msg['type'] in ('chat', 'normal'):
-            # msg.reply("Thanks for sending\n%(body)s" % msg).send()
             print(msg)
-        print(msg)
-
-    def connect(self, *args, **kwargs):
-        """
-        Override the connect method to set the DSCP value on the socket.
-        """
-        sock = super().connect(*args, **kwargs)
-
-        # Set the DSCP value to 7 (which is 0x1C in hexadecimal)
-        DSCP_VALUE = 0x1C  # DSCP 7 is equivalent to binary 00111000, which is 0x1C
-        sock.setsockopt(socket.SOL_IP, socket.IP_TOS, DSCP_VALUE)
-
-        return sock
 
 
 if __name__ == '__main__':
