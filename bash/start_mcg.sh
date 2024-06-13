@@ -14,7 +14,7 @@ presence_time=3 #every 3 seconds
 #Define functions
 
 function start_bot{
-    python3 "$xmpp_bot" -j mcg@xmpp-server.sw1.multimedia.arpa -p password -t mcu@xmpp-server.sw1.multimedia.arpa  &
+    python3 $xmpp_bot -j mcg@xmpp-server.sw1.multimedia.arpa -p password -t mcu@xmpp-server.sw1.multimedia.arpa  &
 }
 
 function send_file{
@@ -24,7 +24,7 @@ function send_file{
 }
 
 function send_presence_msg{
-    python3 "$xmpp_presence" -j mcg@xmpp-server.sw1.multimedia.arpa -p password -t mcu@xmpp-server.sw1.multimedia.arpa  &
+    python3 $xmpp_presence -j mcg@xmpp-server.sw1.multimedia.arpa -p password -t mcu@xmpp-server.sw1.multimedia.arpa  
 }
 
 #START
