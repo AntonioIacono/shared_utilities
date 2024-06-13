@@ -66,7 +66,7 @@ class EchoBot(slixmpp.ClientXMPP):
                    for stanza objects and the Message stanza to see
                    how it may be used.
         """
-        if msg['type'] in ('chat', 'normal'):
+        #if msg['type'] in ('chat', 'normal'):
             #print(msg)
         print(msg)
 
