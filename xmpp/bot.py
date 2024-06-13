@@ -67,8 +67,8 @@ class EchoBot(slixmpp.ClientXMPP):
                    how it may be used.
         """
         if msg['type'] in ('chat', 'normal'):
-            print(msg)
-
+            #print(msg)
+        print(msg)
 
 if __name__ == '__main__':
     # Setup the command line arguments.
