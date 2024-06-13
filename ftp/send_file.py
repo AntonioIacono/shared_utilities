@@ -47,23 +47,13 @@ try:
 
     #data_connection()
     #response = ftp.sendcmd('MKD')
-    local_file_path = 'test.txt'
-    remote_file_path = 'test.txt' 
+    local_file_path = './../ftp/test.txt'
+    remote_file_path = './../ftp/test.txt' 
     ftp.set_pasv(False)
-    cnt = 0;
-    while True:
-
-        with open(local_file_path, 'rb') as file:
+   
+   with open(local_file_path, 'rb') as file:
             ftp.storbinary(f'STOR {remote_file_path}',file)
-        cnt += 1
-        print(f'Message: {cnt}')
-        time.sleep(0.05) #Sleep for 0.05 seconds = 50 ms
-    #file_name = 'test.txt'
-    #command = ''.join(['STOR ', file])
-    #file.close()
-    #response = ftp.sendcmd(command)
-    #print(response)
-    # Close the FTP connection
+    
     ftp.close()
     print(f"Terminato")
 
