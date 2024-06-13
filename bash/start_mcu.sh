@@ -11,11 +11,9 @@ presence_time=3 #every 3 seconds
 
 
 #Define functions
-
 function start_bot {
     python3 "$xmpp_bot" -j mcu@xmpp-server.sw1.multimedia.arpa -p password  &
 }
-
 
 
 function send_notify_msg {
@@ -33,8 +31,8 @@ start_bot &
 #Monitor the log file for new entries
 
 tail -F $vsftpd_log | while read line;do
-    if echo "$line" | grep -q 'ftp'; then
-        echo "File Uploaded";
-        python3 $send_notify_msg
-    fi
+        if echo "$line" | grep -q 'ftp'; then
+            echo "File Uploaded";
+            send_notify_msg
+        fi
 done
