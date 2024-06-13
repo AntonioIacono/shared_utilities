@@ -51,7 +51,7 @@ try:
     remote_file_path = './../ftp/test.txt' 
     ftp.set_pasv(False)
    
-   with open(local_file_path, 'rb') as file:
+    with open(local_file_path, 'rb') as file:
             ftp.storbinary(f'STOR {remote_file_path}',file)
     
     ftp.close()
