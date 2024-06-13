@@ -3,6 +3,7 @@ import struct
 import time
 import argparse
 import threading
+import random
 
 def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset,lifeenabled, checkenabled, life):
     while True:
@@ -24,7 +25,6 @@ def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, ms
         i = 0
         array = []
         for value in ipSplit:
-            
             array.append(int(value))
         values_to_pack = [valore for valore in array]
         print(array)
@@ -53,9 +53,9 @@ def send_udp_packet(ip_address, port, payload, time_value):
     try:
         # Invio del pacchetto UDP
         udp_socket.sendto(payload, (ip_address, port))
-        print(f"Pacchetto inviato a {ip_address}:{port}")
+        print(f"Packet sent to {ip_address}:{port}")
     except Exception as e:
-        print(f"Errore durante l'invio del pacchetto: {e}")
+        print(f"Error: {e}")
     finally:
         # Chiusura del socket
         udp_socket.close()
@@ -63,7 +63,12 @@ def send_udp_packet(ip_address, port, payload, time_value):
 def start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life):
     thread = threading.Thread(target=createMessage, args=(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life))
     thread.start()
-    
+
+def create_dataset(dataset_length):
+    num_bits = dataset_length * 8
+    dataset = ''.join(random.choice('01') for _ in range(num_bits))
+    return dataset
+
 if __name__ == '__main__':
 
     # Setup the command line arguments.
@@ -90,36 +95,21 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    #createMessage(args.ipAddress, args.port, args.timeValue, args.sequenceCounter,
-                  #args.protocolVersion, args.msgType, args.comId, args.etbTopoCnt, 
-                  #args.opTrnTopoCnt, args.datasetLength, args.reserved01, args.replyComId, 
-                  #args.replyIpAddress, args.headerFcs, args.dataset, args.lifeenabled, args.checkenabled, args.life)
-
     ip_multicast = "172.16.1.140"
     comid = 4003
     dataset_life = 200
     port = 17224
-    dataset = "0100100001001100100010000010111101101001001000100011100100011001101010001011010000000110100101000010110011110000111111111010111011100011001011000101100100100101010001111101010111110000001100000011101010100000001110001110110010110100100010011010110011101000110110101101000011100101110011001010011101011001011010001111101111101111100110101010001100110101111110101001101"
     
     """
     start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, 
                  comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
                  replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life)
     """
+
     ##ComID 1301
-    start_thread("172.23.0.2", port, dataset_life, 4035626, 1, 29264,               
+    dataset = create_dataset(46)
+    start_thread("172.16.1.20", port, dataset_life, 4035626, 1, 29264,               
                 40003, 0, 0, 4, 0, 40003,                                   
-                "172.23.0.130", 3572351821, dataset, True, True, 0)         
-    ##ComID 1302
-    #start_thread(???, port, dataset_life, 4035626, 1, 29264,               
-    #             1302, 0, 0, 4, 0, 1302,                                   
-    #             ip_multicast, 3572351821, dataset, True, True, 0)          
-    ##ComID 1303
-    #start_thread(???, port, dataset_life, 4035626, 1, 29264,               
-    #             1303, 0, 0, 4, 0, 1303,                                   
-    #             ip_multicast, 3572351821, dataset, True, True, 0)          
+                "172.23.0.130", 3572351821, dataset, True, True, 0)     
+        
     
-    ##NO Thread
-    #createMessage(ip_multicast,port,dataset_life,4035626,1,29264,
-    #              comid, 0,0,4,0,comid,
-    #              ip_multicast, 3572351821,"00000000000000000000000000000001111111111111111111111111101111111110101010110101101010101011111",life_enabled,check,0)
