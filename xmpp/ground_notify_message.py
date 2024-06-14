@@ -58,43 +58,7 @@ class SendMsgBot(slixmpp.ClientXMPP):
         self.send_message(mto=self.recipient,mbody=self.message,mtype='chat')
         self.disconnect()
 
-"""
-    def presence(self, pres):
 
-        Process incoming presence stanzas to capture a token.
-
-        Arguments:
-             pres -- The received presence stanza.
-
-
-        #print(pres)
-        # JID that must be saved:
-        print("JID:")
-        #if 'from' in pres['status']:
-        token = str(pres['from'])
-        filename = "my_token.txt"
-
-        with open(filename, 'w') as file:
-            file.write(token)
-
-
-    def message(self, msg):
-
-        Process incoming message stanzas. Be aware that this also
-        includes MUC messages and error messages. It is usually
-        a good idea to check the messages's type before processing
-        or sending replies.
-
-        Arguments:
-            msg -- The received message stanza. See the documentation
-                   for stanza objects and the Message stanza to see
-                   how it may be used.
-
-        #if msg['type'] in ('chat', 'normal'):
-            #msg.reply("Thanks for sending\n%(body)s" % msg).send()
-            #print(msg)
-        #print(msg)
-"""
 
 if __name__ == '__main__':
     # Setup the command line arguments.
