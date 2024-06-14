@@ -6,7 +6,7 @@ import threading
 import random
 import netifaces
 
-def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset,lifeenabled, checkenabled, life):
+def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset,lifeenabled, checkenabled, life, source_ip):
     while True:
         sequenceCounter = sequenceCounter + 1
         life = life + 1 if lifeenabled else 1
@@ -44,11 +44,11 @@ def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, ms
         value7 = struct.pack('>I',len(value15))
 
         payload = value1+mettiInsieme+value4+value5+value6+value7+value8+value9+value10+value11+value15
-        send_udp_packet(ipAddress, port, payload, time)
+        send_udp_packet(ipAddress, port, payload, source_ip)
         time.sleep(timeValue/1000)
 
 
-def send_udp_packet(ip_address, port, payload, time_value, source_ip):
+def send_udp_packet(ip_address, port, payload, source_ip):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp_socket.bind((source_ip, 0))
     try:
@@ -61,8 +61,8 @@ def send_udp_packet(ip_address, port, payload, time_value, source_ip):
         # Chiusura del socket
         udp_socket.close()
 
-def start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life):
-    thread = threading.Thread(target=createMessage, args=(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life))
+def start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip):
+    thread = threading.Thread(target=createMessage, args=(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip))
     thread.start()
 
 def create_dataset(dataset_length):
