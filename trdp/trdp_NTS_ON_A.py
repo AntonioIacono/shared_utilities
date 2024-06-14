@@ -28,7 +28,7 @@ def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, ms
         for value in ipSplit:
             array.append(int(value))
         values_to_pack = [valore for valore in array]
-        print(array)
+        #print(array)
         value10 = struct.pack('B'* len(array), *array)
             
         value11 = struct.pack('>I',headerFcs)
@@ -54,7 +54,7 @@ def send_udp_packet(ip_address, port, payload, source_ip):
     try:
         # Invio del pacchetto UDP
         udp_socket.sendto(payload, (ip_address, port))
-        print(f"Packet sent to {ip_address}:{port}")
+        #print(f"Packet sent to {ip_address}:{port}")
     except Exception as e:
         print(f"Error: {e}")
     finally:
