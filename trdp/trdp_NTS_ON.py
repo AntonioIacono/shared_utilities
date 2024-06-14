@@ -48,9 +48,9 @@ def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, ms
         time.sleep(timeValue/1000)
 
 
-def send_udp_packet(ip_address, port, payload, time_value):
-
+def send_udp_packet(ip_address, port, payload, time_value, source_ip):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_socket.bind((source_ip, 0))
     try:
         # Invio del pacchetto UDP
         udp_socket.sendto(payload, (ip_address, port))
@@ -115,122 +115,123 @@ if __name__ == '__main__':
     parser.add_argument('--lifeenabled', action='store_true', required=False, help='Enable life field increment')
     parser.add_argument('--checkenabled', action='store_true', required=False, help='Enable check field')
     parser.add_argument('--life', dest='life', type=int, default=0, required=False, help='Initial value of field life')
-
+    parser.add_argument('--interface', dest='interface', type=str, default=0, required=False, help='Network interface')
     args = parser.parse_args()
 
 
     #Wait for interfaces set up
     # Esempio di utilizzo
-interfaccia = 'Ethernet adapter Ethernet 2'
-if ip:
-    print(f"L'interfaccia {interfaccia} ha ricevuto l'indirizzo IP {ip}.")
-else:
-    print(f"Timeout: L'interfaccia {interfaccia} non ha ricevuto un indirizzo IP entro il tempo limite.")
-    
-    """
-    start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, 
-                 comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-                 replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life)
-    """
+interfaccia = "ens3"
+source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
 
-
-    #msgType=29264 -> ENA request
-    #msgType=28752 -> ENA replay
     
-    
-    ## Parameters dataset with ComID 40003
-    ip_multicast = "239.13.1.1"
-    port = 17224
-    dataset_life = 200
-    sequenceCounter = 4035626
-    protocolVersion = 1
-    msgType = 28752
-    comId = 40003
-    etbTopoCnt = 0
-    opTrnTopoCnt = 0
-    datasetLength = 48
-    reserved01 = 4
-    replyComId = 0
-    replyIpAddress = "0.0.0.0"
-    headerFcs = 3572351821
-    dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
-    lifeenabled = True
-    checkenabled = True
-    life = 0
-    
-    start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+"""
+start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, 
                 comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
                 replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life)
-    
-    ## Parameters dataset with ComID 20008
-    ip_multicast = "239.13.1.1"
-    port = 17224
-    dataset_life = 50
-    sequenceCounter = 4035626
-    protocolVersion = 1
-    msgType = 28752
-    comId = 20008
-    etbTopoCnt = 0
-    opTrnTopoCnt = 0
-    datasetLength = 24 #to be defined
-    reserved01 = 4
-    replyComId = 0
-    replyIpAddress = "0.0.0.0"
-    headerFcs = 3572351821
-    dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
-    lifeenabled = True
-    checkenabled = True
-    life = 0
-    
-    start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
-                comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-                replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life)
-    
+"""
 
-    ## Parameters dataset with ComID 13010
-    ip_multicast = "239.21.1.12"
-    port = 17224
-    dataset_life = 200
-    sequenceCounter = 4035626
-    protocolVersion = 1
-    msgType = 28752
-    comId = 13010
-    etbTopoCnt = 0
-    opTrnTopoCnt = 0
-    datasetLength = 12
-    reserved01 = 4
-    replyComId = 0
-    replyIpAddress = "0.0.0.0"
-    headerFcs = 3572351821
-    dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
-    lifeenabled = True
-    checkenabled = True
-    life = 0
-    
-    start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
-                comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-                replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life)
 
-    ## Parameters dataset with ComID 13030
-    ip_multicast = "239.21.1.12"
-    port = 17224
-    dataset_life = 10000
-    sequenceCounter = 4035626
-    protocolVersion = 1
-    msgType = 28752
-    comId = 13030
-    etbTopoCnt = 0
-    opTrnTopoCnt = 0
-    datasetLength = 12
-    reserved01 = 4
-    replyComId = 0
-    replyIpAddress = "0.0.0.0"
-    headerFcs = 3572351821
-    dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
-    lifeenabled = True
-    checkenabled = True
-    life = 0
-    
-    start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
-                comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-                replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life)
+#msgType=29264 -> ENA request
+#msgType=28752 -> ENA replay
+
+
+## Parameters dataset with ComID 40003
+ip_multicast = "239.13.1.1"
+port = 17224
+dataset_life = 200
+sequenceCounter = 4035626
+protocolVersion = 1
+msgType = 28752
+comId = 40003
+etbTopoCnt = 0
+opTrnTopoCnt = 0
+datasetLength = 48
+reserved01 = 4
+replyComId = 0
+replyIpAddress = "0.0.0.0"
+headerFcs = 3572351821
+dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+lifeenabled = True
+checkenabled = True
+life = 0
+
+start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+
+## Parameters dataset with ComID 20008
+ip_multicast = "239.13.1.1"
+port = 17224
+dataset_life = 50
+sequenceCounter = 4035626
+protocolVersion = 1
+msgType = 28752
+comId = 20008
+etbTopoCnt = 0
+opTrnTopoCnt = 0
+datasetLength = 24 #to be defined
+reserved01 = 4
+replyComId = 0
+replyIpAddress = "0.0.0.0"
+headerFcs = 3572351821
+dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+lifeenabled = True
+checkenabled = True
+life = 0
+
+start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+
+
+## Parameters dataset with ComID 13010
+ip_multicast = "239.21.1.12"
+port = 17224
+dataset_life = 200
+sequenceCounter = 4035626
+protocolVersion = 1
+msgType = 28752
+comId = 13010
+etbTopoCnt = 0
+opTrnTopoCnt = 0
+datasetLength = 12
+reserved01 = 4
+replyComId = 0
+replyIpAddress = "0.0.0.0"
+headerFcs = 3572351821
+dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+lifeenabled = True
+checkenabled = True
+life = 0
+
+start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+
+## Parameters dataset with ComID 13030
+ip_multicast = "239.21.1.12"
+port = 17224
+dataset_life = 10000
+sequenceCounter = 4035626
+protocolVersion = 1
+msgType = 28752
+comId = 13030
+etbTopoCnt = 0
+opTrnTopoCnt = 0
+datasetLength = 12
+reserved01 = 4
+replyComId = 0
+replyIpAddress = "0.0.0.0"
+headerFcs = 3572351821
+dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+lifeenabled = True
+checkenabled = True
+life = 0
+
+start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+
+
+
