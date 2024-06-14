@@ -17,7 +17,7 @@ function start_bot {
 
 
 function send_notify_msg {
-    python3 "$xmpp_presence" -j mcu@xmpp-server.sw1.multimedia.arpa -p password -t mcg@xmpp-server.sw1.multimedia.arpa  
+    python3 "$xmpp_notify" -j mcu@xmpp-server.sw1.multimedia.arpa -p password -t mcg@xmpp-server.sw1.multimedia.arpa  
 }
 
 
