@@ -142,6 +142,15 @@ if __name__ == '__main__':
     interface3 = args.interface_M    
    
     source_ip = args.source_ip
-    monitor_and_forward(interface1, interface3)
-    monitor_and_forward(interface2, interface3)
-    monitor_and_forward(interface3, interface1, interface2)
+    #monitor_and_forward(interface1, interface3)
+    #monitor_and_forward(interface2, interface3)
+    #monitor_and_forward(interface3, interface1, interface2)
+
+    t1 = threading.Thread(target=monitor_and_forward, args=(interface1, interface3))
+    t1.start()
+
+    t2 = threading.Thread(target=monitor_and_forward, args=(interface2, interface3))
+    t2.start()
+
+    t3 = threading.Thread(target=monitor_and_forward, args=(interface2, interface1, interface2))
+    t3.start()
