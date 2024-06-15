@@ -5,47 +5,64 @@ import argparse
 import threading
 import random
 import netifaces
+import zlib
 
-def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset,lifeenabled, checkenabled, life, source_ip):
+def calculate_crc(data):
+    """Calculate CRC32 using the zlib library."""
+    return zlib.crc32(data) & 0xFFFFFFFF
+
+
+def createMessage(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip):
     while True:
-        sequenceCounter = sequenceCounter + 1
-        life = life + 1 if lifeenabled else 1
+        sequenceCounter += 1
+        life = (life + 1) if lifeenabled else 1
         if life == 256:
             life = 0
 
         check = 1 if checkenabled else 0
-        value1 = struct.pack('>I',sequenceCounter)
 
-        value4 = struct.pack('>I',comId)
-        value5 = struct.pack('>I',etbTopoCnt)
-        value6 = struct.pack('>I',opTrnTopoCnt)
-    
-        value8 = struct.pack('>I',reserved01)
-        value9 = struct.pack('>I',replyComId)
-        ipSplit = replyIpAddress.split('.')
-        i = 0
-        array = []
-        for value in ipSplit:
-            array.append(int(value))
-        values_to_pack = [valore for valore in array]
-        #print(array)
-        value10 = struct.pack('B'* len(array), *array)
-            
-        value11 = struct.pack('>I',headerFcs)
-        mettiInsieme = struct.pack('HH', protocolVersion, msgType)
-        while len(dataset) % 8 != 0:
-            dataset += '0'
+        # Pack fields
+        value1 = struct.pack('>I', sequenceCounter)
+        value4 = struct.pack('>I', comId)
+        value5 = struct.pack('>I', etbTopoCnt)
+        value6 = struct.pack('>I', opTrnTopoCnt)
+        value8 = struct.pack('>I', reserved01)
+        value9 = struct.pack('>I', replyComId)
+        
+        # Pack IP address
+        ipSplit = list(map(int, replyIpAddress.split('.')))
+        value10 = struct.pack('BBBB', *ipSplit)
+
         value12 = struct.pack('B', life)
         value13 = struct.pack('B', check)
 
+        # Ensure dataset is a multiple of 8 bits
+        while len(dataset) % 8 != 0:
+            dataset += '0'
+        
         # Convert binary string to bytes
         value14 = bytes(int(dataset[i:i+8], 2) for i in range(0, len(dataset), 8))
         value15 = value12 + value13 + value14
-        value7 = struct.pack('>I',len(value15))
 
-        payload = value1+mettiInsieme+value4+value5+value6+value7+value8+value9+value10+value11+value15
-        send_udp_packet(ipAddress, port, payload, source_ip)
-        time.sleep(timeValue/1000)
+        # Calculate dataset length and pack it
+        datasetLength = len(value15)
+        value7 = struct.pack('>I', datasetLength)
+
+        # Construct the header without the CRC
+        header_without_crc = value1 + struct.pack('>HH', protocolVersion, msgType) + value4 + value5 + value6 + value7 + value8 + value9 + value10
+
+        # Calculate the CRC over the header
+        headerFcs = calculate_crc(header_without_crc)
+        value11 = struct.pack('>I', headerFcs)
+
+        # Complete header with CRC and payload
+        payload = header_without_crc + value11 + value15
+
+        # Send the packet
+        send_udp_packet(ipAddress, port, payload,source_ip)
+
+        # Sleep for the specified time interval
+        time.sleep(timeValue / 1000.0)
 
 
 def send_udp_packet(ip_address, port, payload, source_ip):
