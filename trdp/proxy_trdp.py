@@ -45,24 +45,9 @@ def parse_trdp_packet(data):
         'dataset': dataset
     }
 
-def forward_packet(packet, parsed_packet, forward_interface, new_dest_ip):
-    # Update the IP header
+def forward_packet(packet, forward_interface, new_dest_ip):
     packet[IP].src = check_interface_ip(forward_interface)
     packet[IP].dst = new_dest_ip
-    
-    
-    
-    # Recalculate the CRC over the header without the CRC field
-    header_without_crc = parsed_packet[:36]  # Assuming the CRC field is at bytes 36-39
-    new_crc = calculate_crc(header_without_crc)
-    
-    # Rebuild the packet with the new CRC
-    updated_packet = header_without_crc + struct.pack('>I', new_crc) + parsed_packet[40:]
-    
-    # Update the Raw layer with the new packet data
-    packet[Raw] = Raw(load=updated_packet)
-    
-    # Send the packet
     sendp(packet, iface=forward_interface, verbose=0)
 
 def packet_worker(q, forward_interface1, forward_interface2 = None):
@@ -81,7 +66,7 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
                 parsed_packet = parse_trdp_packet(data)
                 #dataset comID 40003
                 if parsed_packet['comId'] == 40003 and parsed_packet['datasetLength'] == 48 and parsed_packet:
-                    forward_packet(packet,parsed_packet, forward_interface1, new_ip_to_MN)
+                    forward_packet(packet, forward_interface1, new_ip_to_MN)
 
             if packet[IP].dst == "239.21.1.12":
                 data = bytes(packet[Raw])
@@ -123,13 +108,13 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
                 parsed_packet = parse_trdp_packet(data)
                 #dataset comID 1301
                 if parsed_packet['comId'] == 1301 and parsed_packet['datasetLength'] == 500 and parsed_packet:
-                    forward_packet(packet,parsed_packet, forward_interface1, new_ip_to_ON_A)
-                    forward_packet(packet,parsed_packet, forward_interface2, new_ip_to_ON_B)   
+                    forward_packet(packet, forward_interface1, new_ip_to_ON_A)
+                    forward_packet(packet, forward_interface2, new_ip_to_ON_B)   
 
                 #dataset comID 1303
                 if parsed_packet['comId'] == 1303 and parsed_packet['datasetLength'] == 350 and parsed_packet:
-                    forward_packet(packet,parsed_packet, forward_interface1, new_ip_to_ON_A)
-                    forward_packet(packet,parsed_packet, forward_interface2, new_ip_to_ON_B)         
+                    forward_packet(packet, forward_interface1, new_ip_to_ON_A)
+                    forward_packet(packet, forward_interface2, new_ip_to_ON_B)         
         q.task_done()
 
 def monitor_and_forward(interface, forward_interface1, forward_interface2 = None):
