@@ -4,6 +4,11 @@ import struct
 import netifaces
 from scapy.all import sniff, sendp, Ether, IP, UDP, Raw
 from queue import Queue
+import zlib
+
+def calculate_crc(data):
+    """Calculate CRC32 using the zlib library."""
+    return zlib.crc32(data) & 0xFFFFFFFF
 
 
 def parse_trdp_packet(data):
@@ -41,8 +46,23 @@ def parse_trdp_packet(data):
     }
 
 def forward_packet(packet, forward_interface, new_dest_ip):
+    # Update the IP header
     packet[IP].src = check_interface_ip(forward_interface)
     packet[IP].dst = new_dest_ip
+    
+    # Extract the payload
+    data = bytes(packet[Raw])
+    
+    # Parse the TRDP packet
+    parsed_packet = parse_trdp_packet(data)
+    
+    # Recalculate the CRC and get the updated packet
+    updated_packet = recalculate_crc(parsed_packet, data)
+    
+    # Update the Raw layer with the new packet data
+    packet[Raw] = Raw(load=updated_packet)
+    
+    # Send the packet
     sendp(packet, iface=forward_interface, verbose=0)
 
 def packet_worker(q, forward_interface1, forward_interface2 = None):
