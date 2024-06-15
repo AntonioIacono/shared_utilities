@@ -96,7 +96,7 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
                     forward_packet(packet, forward_interface1, new_ip_to_MN)
 
         #ACL from  Multimedia to VLAN_A and VLAN_B
-            if packet[IP].dst == "239.110.1.1":
+            if packet[IP].dst == '239.110.1.1':
                 data = bytes(packet[Raw])
                 parsed_packet = parse_trdp_packet(data)
                 #dataset comID 1301
