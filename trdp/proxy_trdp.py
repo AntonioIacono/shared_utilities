@@ -21,8 +21,7 @@ def parse_trdp_packet(data):
     check = data[41]
     dataset = ''.join(f'{byte:08b}' for byte in data[42:])
    
-    # Calculate the size of the TRDP packet
-    trdp_packet_size = len(data)
+
 
     return {
         'sequenceCounter': sequenceCounter,
@@ -38,8 +37,7 @@ def parse_trdp_packet(data):
         'headerFcs': headerFcs,
         'life': life,
         'check': check,
-        'dataset': dataset,
-        'packetSize' : trdp_packet_size
+        'dataset': dataset
     }
 
 def forward_packet(packet, forward_interface, new_dest_ip):
@@ -62,18 +60,18 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
                 data = bytes(packet[Raw])
                 parsed_packet = parse_trdp_packet(data)
                 #dataset comID 40003
-                if parsed_packet['comId'] == 40003 and parsed_packet['packetSize'] == 48 and parsed_packet:
+                if parsed_packet['comId'] == 40003 and parsed_packet['datasetLength'] == 48 and parsed_packet:
                     forward_packet(packet, forward_interface1, new_ip_to_MN)
 
             if packet[IP].dst == "239.21.1.12":
                 data = bytes(packet[Raw])
                 parsed_packet = parse_trdp_packet(data)
                 #dataset comID 13010
-                if parsed_packet['comId'] == 13010 and parsed_packet['packetSize'] == 12 and parsed_packet:
+                if parsed_packet['comId'] == 13010 and parsed_packet['datasetLength'] == 12 and parsed_packet:
                     forward_packet(packet, forward_interface1, new_ip_to_MN)   
 
                 #dataset comID 13030
-                if parsed_packet['comId'] == 13030 and parsed_packet['packetSize'] == 12 and parsed_packet:
+                if parsed_packet['comId'] == 13030 and parsed_packet['datasetLength'] == 12 and parsed_packet:
                     forward_packet(packet, forward_interface1, new_ip_to_MN) 
         
         #################################
@@ -83,18 +81,18 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
                 data = bytes(packet[Raw])
                 parsed_packet = parse_trdp_packet(data)
                 #dataset comID 40003
-                if parsed_packet['comId'] == 40003 and parsed_packet['packetSize'] == 48 and parsed_packet:
+                if parsed_packet['comId'] == 40003 and parsed_packet['datasetLength'] == 48 and parsed_packet:
                     forward_packet(packet, forward_interface1, new_ip_to_MN)
 
             if packet[IP].dst == "239.21.2.12":
                 data = bytes(packet[Raw])
                 parsed_packet = parse_trdp_packet(data)
                 #dataset comID 13010
-                if parsed_packet['comId'] == 13010 and parsed_packet['packetSize'] == 12 and parsed_packet:
+                if parsed_packet['comId'] == 13010 and parsed_packet['datasetLength'] == 12 and parsed_packet:
                     forward_packet(packet, forward_interface1, new_ip_to_MN)   
 
                 #dataset comID 13030
-                if parsed_packet['comId'] == 13030 and parsed_packet['packetSize'] == 12 and parsed_packet:
+                if parsed_packet['comId'] == 13030 and parsed_packet['datasetLength'] == 12 and parsed_packet:
                     forward_packet(packet, forward_interface1, new_ip_to_MN)
 
         #############################################
