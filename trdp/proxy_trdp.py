@@ -121,7 +121,8 @@ def forward_packet(packet, p_packet, forward_interface, new_dest_ip):
     packet[IP].src = check_interface_ip(forward_interface)
     packet[IP].dst = new_dest_ip
     
-    header_without_crc = p_packet['sequenceCounter'] + p_packet['protocolVersion'] + p_packet['msgType'] + p_packet['comId'] + p_packet['protocolVersion'] + p_packet['etbTopoCnt'] + p_packet['opTrnTopoCnt'] + p_packet['datasetLength'] + p_packet['reserved01'] + p_packet['replyComId'] + p_packet['replyIpAddress']
+    #header_without_crc = p_packet['sequenceCounter'] + p_packet['protocolVersion'] + p_packet['msgType'] + p_packet['comId'] + p_packet['protocolVersion'] + p_packet['etbTopoCnt'] + p_packet['opTrnTopoCnt'] + p_packet['datasetLength'] + p_packet['reserved01'] + p_packet['replyComId'] + p_packet['replyIpAddress']
+    header_without_crc = p_packet[:10]
     # Calculate the CRC over the header
     headerFcs = fcs32(header_without_crc, 32, 0xFFFFFFFF)
     value11 = struct.pack('>I', headerFcs)
