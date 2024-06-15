@@ -56,8 +56,12 @@ def forward_packet(packet, forward_interface, new_dest_ip):
     # Parse the TRDP packet
     parsed_packet = parse_trdp_packet(data)
     
-    # Recalculate the CRC and get the updated packet
-    updated_packet = calculate_crc(parsed_packet, data)
+    # Recalculate the CRC over the header without the CRC field
+    header_without_crc = data[:36]  # Assuming the CRC field is at bytes 36-39
+    new_crc = calculate_crc(header_without_crc)
+    
+    # Rebuild the packet with the new CRC
+    updated_packet = header_without_crc + struct.pack('>I', new_crc) + data[40:]
     
     # Update the Raw layer with the new packet data
     packet[Raw] = Raw(load=updated_packet)
