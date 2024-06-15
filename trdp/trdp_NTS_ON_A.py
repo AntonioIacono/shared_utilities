@@ -161,28 +161,28 @@ start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion,
             replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
 
 ## Parameters dataset with ComID 20008
-ip_multicast = "239.13.1.1"
-port = 17224
-dataset_life = 50
-sequenceCounter = 4035626
-protocolVersion = 1
-msgType = 28752
-comId = 20008
-etbTopoCnt = 0
-opTrnTopoCnt = 0
-datasetLength = 24 #to be defined
-reserved01 = 4
-replyComId = 0
-replyIpAddress = "0.0.0.0"
-headerFcs = 3572351821
-dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
-lifeenabled = True
-checkenabled = True
-life = 0
+#ip_multicast = "239.13.1.1"
+#port = 17224
+#dataset_life = 50
+#sequenceCounter = 4035626
+#protocolVersion = 1
+#msgType = 28752
+#comId = 20008
+#etbTopoCnt = 0
+#opTrnTopoCnt = 0
+#datasetLength = 24 #to be defined
+#reserved01 = 4
+#replyComId = 0
+#replyIpAddress = "0.0.0.0"
+#headerFcs = 3572351821
+#dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+#lifeenabled = True
+#checkenabled = True
+#life = 0
 
-start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
-            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+#start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+#            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+#            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
 
 
 ## Parameters dataset with ComID 13010
