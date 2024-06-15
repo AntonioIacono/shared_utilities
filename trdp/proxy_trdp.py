@@ -128,6 +128,30 @@ def get_interface_ip(interface):
     addresses = netifaces.ifaddresses(interface)
     return addresses[netifaces.AF_INET][0]['addr']
 
+
+def start_monitoring(interface1, interface2, interface3):
+    threads = []
+    
+    # Start the first monitor_and_forward call
+    t1 = threading.Thread(target=monitor_and_forward, args=(interface1, interface3))
+    threads.append(t1)
+    
+    # Start the second monitor_and_forward call
+    t2 = threading.Thread(target=monitor_and_forward, args=(interface2, interface3))
+    threads.append(t2)
+    
+    # Start the third monitor_and_forward call
+    t3 = threading.Thread(target=monitor_and_forward, args=(interface3, interface1, interface2))
+    threads.append(t3)
+    
+    # Start all threads
+    for t in threads:
+        t.start()
+    
+    # Join all threads
+    for t in threads:
+        t.join()
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Simple script to sniff and forward UDP multicast traffic from one interface to another')
     parser.add_argument('-a', '--interface_A', dest='interface_A', type=str, default='ens3', help='Source network interface to sniff multicast UDP traffic from')
@@ -146,11 +170,4 @@ if __name__ == '__main__':
     #monitor_and_forward(interface2, interface3)
     #monitor_and_forward(interface3, interface1, interface2)
 
-    t1 = threading.Thread(target=monitor_and_forward, args=(interface1, interface3))
-    t1.start()
-
-    t2 = threading.Thread(target=monitor_and_forward, args=(interface2, interface3))
-    t2.start()
-
-    t3 = threading.Thread(target=monitor_and_forward, args=(interface2, interface1, interface2))
-    t3.start()
+    start_monitoring(interface1, interface2, interface3)
