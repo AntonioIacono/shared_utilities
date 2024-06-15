@@ -57,7 +57,7 @@ def forward_packet(packet, forward_interface, new_dest_ip):
     parsed_packet = parse_trdp_packet(data)
     
     # Recalculate the CRC and get the updated packet
-    updated_packet = recalculate_crc(parsed_packet, data)
+    updated_packet = calculate_crc(parsed_packet, data)
     
     # Update the Raw layer with the new packet data
     packet[Raw] = Raw(load=updated_packet)
