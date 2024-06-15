@@ -55,6 +55,7 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
         new_ip_to_ON_B = "239.24.2.1"
         # Here there is a list of ACL based first on IP and then on TRDP parameters
         if IP in packet and Raw in packet:
+            print ("parser")
         #ACL from VLAN_A to Multimedia
             if packet[IP].dst == "239.13.1.1":
                 data = bytes(packet[Raw])
