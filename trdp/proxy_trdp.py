@@ -49,8 +49,8 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
     while True:
         packet = q.get()
         new_ip_to_MN = "239.100.1.1"
-        new_ip_to_ON_A = "239.18.1.1"
-        new_ip_to_ON_B = "239.18.2.1"
+        new_ip_to_ON_A = "239.24.1.1"
+        new_ip_to_ON_B = "239.24.2.1"
         # Here there is a list of ACL based first on IP and then on TRDP parameters
         if IP in packet and Raw in packet:
         #################################
