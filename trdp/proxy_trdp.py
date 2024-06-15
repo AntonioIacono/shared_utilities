@@ -99,11 +99,13 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
                 parsed_packet = parse_trdp_packet(data)
                 #dataset comID 1301
                 if parsed_packet['comId'] == 1301 and parsed_packet['packetSize'] == 500 and parsed_packet:
+                    print ("pacchetto")
                     forward_packet(packet, forward_interface1, new_ip_to_ON_A)
                     forward_packet(packet, forward_interface2, new_ip_to_ON_B)   
 
                 #dataset comID 1303
                 if parsed_packet['comId'] == 1303 and parsed_packet['packetSize'] == 350 and parsed_packet:
+                    print ("pacchetto")
                     forward_packet(packet, forward_interface1, new_ip_to_ON_A)
                     forward_packet(packet, forward_interface2, new_ip_to_ON_B)         
         q.task_done()
