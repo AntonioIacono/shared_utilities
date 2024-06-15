@@ -41,7 +41,7 @@ def parse_trdp_packet(data):
     }
 
 def forward_packet(packet, forward_interface, new_dest_ip):
-    packet[IP].src = source_ip
+    packet[IP].src = check_interface_ip(forward_interface)
     packet[IP].dst = new_dest_ip
     sendp(packet, iface=forward_interface, verbose=0)
 
@@ -155,6 +155,20 @@ def start_monitoring(interface1, interface2, interface3):
     # Join all threads
     for t in threads:
         t.join()
+
+
+def check_interface_ip(interface):
+    try:
+        addresses = netifaces.ifaddresses(interface)
+        if netifaces.AF_INET in addresses:
+            ip_info = addresses[netifaces.AF_INET][0]
+            ip_address = ip_info.get('addr', None)
+            if ip_address:
+                return ip_address
+        return None
+    except ValueError:
+        return None
+    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Simple script to sniff and forward UDP multicast traffic from one interface to another')
