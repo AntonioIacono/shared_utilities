@@ -55,9 +55,9 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
         new_ip_to_ON_B = "239.24.2.1"
         # Here there is a list of ACL based first on IP and then on TRDP parameters
         if IP in packet and Raw in packet:
-            print ("parser")
-            print(packet[IP].dst)
-        #ACL from VLAN_A to Multimedia
+        #################################
+        # ACL from VLAN_A to Multimedia #
+        #################################
             if packet[IP].dst == "239.13.1.1":
                 data = bytes(packet[Raw])
                 parsed_packet = parse_trdp_packet(data)
@@ -76,7 +76,9 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
                 if parsed_packet['comId'] == 13030 and parsed_packet['packetSize'] == 12 and parsed_packet:
                     forward_packet(packet, forward_interface1, new_ip_to_MN) 
         
-        #ACL from VLAN_B to Multimedia
+        #################################
+        # ACL from VLAN_B to Multimedia #
+        #################################
             if packet[IP].dst == "239.13.2.1":
                 data = bytes(packet[Raw])
                 parsed_packet = parse_trdp_packet(data)
@@ -95,11 +97,14 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
                 if parsed_packet['comId'] == 13030 and parsed_packet['packetSize'] == 12 and parsed_packet:
                     forward_packet(packet, forward_interface1, new_ip_to_MN)
 
-        #ACL from  Multimedia to VLAN_A and VLAN_B
+        #############################################
+        # ACL from  Multimedia to VLAN_A and VLAN_B #
+        #############################################
             if packet[IP].dst == '239.110.1.1':
-                print ("pacchetto")
                 data = bytes(packet[Raw])
                 parsed_packet = parse_trdp_packet(data)
+                print(parsed_packet['comId'])
+                print(parsed_packet['packetSize'])
                 #dataset comID 1301
                 if parsed_packet['comId'] == 1301 and parsed_packet['packetSize'] == 500 and parsed_packet:
                     print ("pacchetto")
