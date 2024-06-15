@@ -98,18 +98,16 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
         #############################################
         # ACL from  Multimedia to VLAN_A and VLAN_B #
         #############################################
-            if packet[IP].dst == '239.110.1.1':
+            if packet[IP].dst == '239.100.1.10':
                 data = bytes(packet[Raw])
                 parsed_packet = parse_trdp_packet(data)
                 #dataset comID 1301
                 if parsed_packet['comId'] == 1301 and parsed_packet['datasetLength'] == 500 and parsed_packet:
-                    print ("pacchetto")
                     forward_packet(packet, forward_interface1, new_ip_to_ON_A)
                     forward_packet(packet, forward_interface2, new_ip_to_ON_B)   
 
                 #dataset comID 1303
                 if parsed_packet['comId'] == 1303 and parsed_packet['datasetLength'] == 350 and parsed_packet:
-                    print ("pacchetto")
                     forward_packet(packet, forward_interface1, new_ip_to_ON_A)
                     forward_packet(packet, forward_interface2, new_ip_to_ON_B)         
         q.task_done()
