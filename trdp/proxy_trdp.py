@@ -101,8 +101,6 @@ def packet_worker(q, forward_interface1, forward_interface2 = None):
             if packet[IP].dst == '239.110.1.1':
                 data = bytes(packet[Raw])
                 parsed_packet = parse_trdp_packet(data)
-                print(parsed_packet['comId'])
-                print(parsed_packet['datasetLength'])
                 #dataset comID 1301
                 if parsed_packet['comId'] == 1301 and parsed_packet['datasetLength'] == 500 and parsed_packet:
                     print ("pacchetto")
