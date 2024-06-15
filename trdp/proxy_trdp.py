@@ -112,10 +112,10 @@ def monitor_and_forward(interface, forward_interface1, forward_interface2 = None
     print(f"Monitoring and forwarding multicast UDP traffic from {interface} to {forward_interface1} {forward_interface2}")
     
     # Aumentiamo la dimensione della coda
-    packet_queue = Queue(maxsize=1000000)  # Possiamo regolare la dimensione della coda a seconda delle esigenze
+    packet_queue = Queue(maxsize=100000)  # Possiamo regolare la dimensione della coda a seconda delle esigenze
 
     # Avvio i thread lavoratori
-    for _ in range(400):  # Possiamo regolare il numero di thread a seconda delle esigenze
+    for _ in range(100):  # Possiamo regolare il numero di thread a seconda delle esigenze
         t = threading.Thread(target=packet_worker, args=(packet_queue, forward_interface1,forward_interface2), daemon=True)
         t.start()
 
