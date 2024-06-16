@@ -121,10 +121,9 @@ if __name__ == '__main__':
 
     #Wait for interfaces set up
     # Esempio di utilizzo
-#interfaccia = "ens3"
-#source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
-#source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
-source_ip = "172.16.1.140"
+interfaccia = "ens3"
+source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+
     
 """
 start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, 

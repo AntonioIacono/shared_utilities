@@ -117,7 +117,7 @@ def createMessage(ipAddress, port, timeValue, sequenceCounter, protocolVersion, 
         value7 = struct.pack('>I', datasetLength)
 
         # Construct the header without the CRC
-        header_without_crc = value1 + struct.pack('>HH', protocolVersion, msgType) + value4 + value5 + value6 + value7 + value8 + value9 + value10
+        header_without_crc = value1 + struct.pack('HH', protocolVersion, msgType) + value4 + value5 + value6 + value7 + value8 + value9 + value10
         print(len(header_without_crc))
         # Calculate the CRC over the header
         headerFcs = fcs32(header_without_crc, 32, headerFcs)
@@ -206,9 +206,9 @@ if __name__ == '__main__':
 
     #Wait for interfaces set up
     # Esempio di utilizzo
-#interfaccia = "ens3"
-#source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
-source_ip = "172.16.1.140"    
+interfaccia = "ens3"
+source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+    
 """
 start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, 
                 comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
