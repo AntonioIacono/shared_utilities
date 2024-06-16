@@ -44,14 +44,7 @@ def parse_trdp_packet(data):
 def forward_packet(packet, forward_interface, new_dest_ip):
     #packet[IP].src = check_interface_ip(forward_interface)
     #packet[IP].dst = new_dest_ip
-    
-    # Recalculate the header FCS
-    #header_without_crc = packet[Raw].load[:36]  # Extract first 36 bytes of the payload (header without CRC)
-    #headerFcs = fcs32(header_without_crc, len(header_without_crc), 0xFFFFFFFF)
-    
-    # Update the header FCS in the packet
-    #new_payload = header_without_crc + struct.pack('I', headerFcs) + packet[Raw].load[40:]  # Construct the new payload
-    #packet[Raw].load = new_payload  # Replace the old payload with the new one
+    print(packet)
     sendp(packet, iface=forward_interface, verbose=0)
 
 def packet_worker(q, forward_interface1, forward_interface2 = None):
