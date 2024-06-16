@@ -59,7 +59,6 @@ def forward_packet(packet, forward_interface, new_dest_ip):
         # Chiusura del socket
         udp_socket.close()
 
-    print(packet)
 
 def packet_worker(q, forward_interface1, forward_interface2 = None):
     while True:
