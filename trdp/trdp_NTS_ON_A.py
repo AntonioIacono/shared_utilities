@@ -47,7 +47,6 @@ def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, ms
         send_udp_packet(ipAddress, port, payload, source_ip)
         time.sleep(timeValue/1000)
 
-
 def send_udp_packet(ip_address, port, payload, source_ip):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp_socket.bind((source_ip, 0))

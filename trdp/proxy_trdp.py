@@ -60,7 +60,6 @@ def forward_packet(packet, forward_interface, new_dest_ip):
         udp_socket.close()
 
     print(packet)
-    #sendp(packet, iface=forward_interface, verbose=0)
 
 def packet_worker(q, forward_interface1, forward_interface2 = None):
     while True:
