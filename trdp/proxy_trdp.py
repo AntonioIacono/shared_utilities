@@ -2,6 +2,7 @@ import argparse
 import threading
 import struct
 import netifaces
+import socket
 from scapy.all import sniff, sendp, Ether, IP, UDP, Raw
 from queue import Queue
 import zlib
@@ -44,6 +45,19 @@ def parse_trdp_packet(data):
 def forward_packet(packet, forward_interface, new_dest_ip):
     #packet[IP].src = check_interface_ip(forward_interface)
     #packet[IP].dst = new_dest_ip
+
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_socket.bind((source_ip, 0))
+    try:
+        # Invio del pacchetto UDP
+        udp_socket.sendto(packet[Raw], (new_dest_ip, 17224))
+        #print(f"Packet sent to {ip_address}:{port}")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        # Chiusura del socket
+        udp_socket.close()
+
     print(packet)
     sendp(packet, iface=forward_interface, verbose=0)
 
