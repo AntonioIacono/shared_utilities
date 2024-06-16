@@ -122,7 +122,7 @@ def forward_packet(packet, p_packet, forward_interface, new_dest_ip):
     packet[IP].dst = new_dest_ip
     
     # Recalculate the header FCS
-    header_without_crc = packet[Raw].load[:36]  # Extract first 36 bytes of the payload (header without CRC)
+    header_without_crc = packet[Raw].load[:38]  # Extract first 36 bytes of the payload (header without CRC)
     headerFcs = fcs32(header_without_crc, len(header_without_crc), 0xFFFFFFFF)
     
     # Update the header FCS in the packet
