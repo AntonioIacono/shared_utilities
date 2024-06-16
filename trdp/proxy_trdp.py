@@ -117,18 +117,46 @@ def parse_trdp_packet(data):
         'dataset': dataset
     }
 
+def send_udp_packet(ip_address, port, payload, source_ip):
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_socket.bind((source_ip, 0))
+    try:
+        # Invio del pacchetto UDP
+        udp_socket.sendto(payload, (ip_address, port))
+        #print(f"Packet sent to {ip_address}:{port}")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        # Chiusura del socket
+        udp_socket.close()
+
 def forward_packet(packet, p_packet, forward_interface, new_dest_ip):
     packet[IP].src = check_interface_ip(forward_interface)
-    #packet[IP].dst = new_dest_ip
-    
+    packet[IP].dst = new_dest_ip
+    port = 17224
     # Recalculate the header FCS
-    #header_without_crc = packet[Raw].load[:38]  # Extract first 36 bytes of the payload (header without CRC)
-    #headerFcs = fcs32(header_without_crc, len(header_without_crc), 0xFFFFFFFF)
+    header_without_crc = packet[Raw].load[:36]  # Extract first 36 bytes of the payload (header without CRC)
+    headerFcs = fcs32(header_without_crc, len(header_without_crc), 0xFFFFFFFF)
     
     # Update the header FCS in the packet
-    #new_payload = header_without_crc + struct.pack('>I', headerFcs) + packet[Raw].load[40:]  # Construct the new payload
-    #packet[Raw].load = new_payload  # Replace the old payload with the new one
-    sendp(packet, iface=forward_interface, verbose=0)
+    new_payload = header_without_crc + struct.pack('H', headerFcs) + packet[Raw].load[40:]  # Construct the new payload
+    packet[Raw].load = new_payload  # Replace the old payload with the new one
+
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_socket.bind((source_ip, 0))
+    try:
+        # Invio del pacchetto UDP
+        udp_socket.sendto(packet, (packet, port))
+        #print(f"Packet sent to {ip_address}:{port}")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        # Chiusura del socket
+        udp_socket.close()
+
+
+
+    #sendp(packet, iface=forward_interface, verbose=0)
 
 def packet_worker(q, forward_interface1, forward_interface2 = None):
     while True:
