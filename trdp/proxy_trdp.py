@@ -48,9 +48,10 @@ def forward_packet(packet, forward_interface, new_dest_ip):
 
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp_socket.bind((source_ip, 0))
+    raw_packet = bytes(packet[Raw])
     try:
         # Invio del pacchetto UDP
-        udp_socket.sendto(packet[Raw], (new_dest_ip, 17224))
+        udp_socket.sendto(raw_packet, (new_dest_ip, 17224))
         #print(f"Packet sent to {ip_address}:{port}")
     except Exception as e:
         print(f"Error: {e}")
@@ -59,7 +60,7 @@ def forward_packet(packet, forward_interface, new_dest_ip):
         udp_socket.close()
 
     print(packet)
-    sendp(packet, iface=forward_interface, verbose=0)
+    #sendp(packet, iface=forward_interface, verbose=0)
 
 def packet_worker(q, forward_interface1, forward_interface2 = None):
     while True:
