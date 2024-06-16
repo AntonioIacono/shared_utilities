@@ -45,9 +45,9 @@ def parse_trdp_packet(data):
 def forward_packet(packet, forward_interface, new_dest_ip):
     #packet[IP].src = check_interface_ip(forward_interface)
     #packet[IP].dst = new_dest_ip
-
+    s_ip = check_interface_ip(forward_interface)
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udp_socket.bind((source_ip, 0))
+    udp_socket.bind((s_ip, 0))
     raw_packet = bytes(packet[Raw])
     try:
         # Invio del pacchetto UDP
