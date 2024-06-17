@@ -18,7 +18,7 @@ def parse_trdp_packet(data):
     reserved01 = struct.unpack('>I', data[24:28])[0]
     replyComId = struct.unpack('>I', data[28:32])[0]
     replyIpAddress = '.'.join(map(str, data[32:36]))
-    headerFcs = struct.unpack('<I', data[36:40])[0]
+    headerFcs = struct.unpack('>I', data[36:40])[0]
     life = data[40]
     check = data[41]
     dataset = ''.join(f'{byte:08b}' for byte in data[42:])
