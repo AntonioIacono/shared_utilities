@@ -6,6 +6,12 @@ import threading
 import random
 import netifaces
 
+
+def calculate_crc(data):
+    """Calculate CRC32 using the zlib library."""
+    return zlib.crc32(data) & 0xFFFFFFFF
+
+
 def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset,lifeenabled, checkenabled, life, source_ip):
     while True:
         sequenceCounter = sequenceCounter + 1
@@ -31,8 +37,8 @@ def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, ms
         #print(array)
         value10 = struct.pack('B'* len(array), *array)
             
-        value11 = struct.pack('>I',headerFcs)
-        mettiInsieme = struct.pack('HH', protocolVersion, msgType)
+        
+        mettiInsieme = struct.pack('>HH', protocolVersion, msgType)
         while len(dataset) % 8 != 0:
             dataset += '0'
         value12 = struct.pack('B', life)
@@ -43,7 +49,15 @@ def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, ms
         value15 = value12 + value13 + value14
         value7 = struct.pack('>I',len(value15))
 
-        payload = value1+mettiInsieme+value4+value5+value6+value7+value8+value9+value10+value11+value15
+        # Construct the header without the CRC
+        header_without_crc = value1 + struct.pack('>HH', protocolVersion, msgType) + value4 + value5 + value6 + value7 + value8 + value9 + value10
+        # Calculate the CRC over the header
+        #headerFcs = fcs32(header_without_crc, 32, headerFcs)
+        headerFcs = calculate_crc(header_without_crc)
+        value11 = struct.pack('<I', headerFcs)
+
+        # Complete header with CRC and payload
+        payload = header_without_crc + value11 + value15
         send_udp_packet(ipAddress, port, payload, source_ip)
         time.sleep(timeValue/1000)
 
@@ -216,7 +230,7 @@ dataset_life = 10000
 sequenceCounter = 4035626
 protocolVersion = 1
 msgType = 28752
-comId = 13030
+comId = 40003
 etbTopoCnt = 0
 opTrnTopoCnt = 0
 datasetLength = 12
@@ -233,5 +247,53 @@ start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion,
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
             replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
 
+#Unauthorized dataset
+## Parameters dataset with ComID 1303
+ip_multicast = "239.13.2.1"
+port = 17224
+dataset_life = 1000
+sequenceCounter = 4035626
+protocolVersion = 1
+msgType = 28752
+comId = 1303
+etbTopoCnt = 0
+opTrnTopoCnt = 0
+datasetLength = 450 
+reserved01 = 4
+replyComId = 0
+replyIpAddress = "0.0.0.0"
+headerFcs = 3572351821
+dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+lifeenabled = True
+checkenabled = True
+life = 0
 
+start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+
+#Unauthorized dataset
+## Parameters dataset with ComID 1303
+ip_multicast = "239.13.2.1"
+port = 17224
+dataset_life = 1000
+sequenceCounter = 4035626
+protocolVersion = 1
+msgType = 28752
+comId = 12345
+etbTopoCnt = 0
+opTrnTopoCnt = 0
+datasetLength = 12 
+reserved01 = 4
+replyComId = 0
+replyIpAddress = "0.0.0.0"
+headerFcs = 3572351821
+dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+lifeenabled = True
+checkenabled = True
+life = 0
+
+start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
 
