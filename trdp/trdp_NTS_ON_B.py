@@ -50,7 +50,7 @@ def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, ms
         value7 = struct.pack('>I',len(value15))
 
         # Construct the header without the CRC
-        header_without_crc = value1 + struct.pack('>HH', protocolVersion, msgType) + value4 + value5 + value6 + value7 + value8 + value9 + value10
+        header_without_crc = value1 + struct.pack('<H', protocolVersion) + struct.pack('>H', msgType) + value4 + value5 + value6 + value7 + value8 + value9 + value10
         # Calculate the CRC over the header
         #headerFcs = fcs32(header_without_crc, 32, headerFcs)
         headerFcs = calculate_crc(header_without_crc)
