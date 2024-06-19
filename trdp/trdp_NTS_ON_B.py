@@ -5,7 +5,7 @@ import argparse
 import threading
 import random
 import netifaces
-
+import zlib
 
 def calculate_crc(data):
     """Calculate CRC32 using the zlib library."""
@@ -272,17 +272,17 @@ start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion,
             replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
 
 #Unauthorized dataset
-## Parameters dataset with ComID 1303
+## Parameters dataset with ComID 40009
 ip_multicast = "239.13.2.1"
 port = 17224
 dataset_life = 1000
 sequenceCounter = 4035626
 protocolVersion = 1
-msgType = 28752
-comId = 12345
+msgType = 20580
+comId = 40009
 etbTopoCnt = 0
 opTrnTopoCnt = 0
-datasetLength = 12 
+datasetLength = 450 
 reserved01 = 4
 replyComId = 0
 replyIpAddress = "0.0.0.0"
