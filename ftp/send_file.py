@@ -15,7 +15,7 @@ def data_connection():
 
 
 # FTP server details
-ftp_host = '172.23.0.118'
+ftp_host = '172.23.0.97'
 ftp_port = 21
 data_port = 25600  # The data channel port you want to use
 username = 'admin'
@@ -47,8 +47,8 @@ try:
 
     #data_connection()
     #response = ftp.sendcmd('MKD')
-    local_file_path = './../ftp/test.txt'
-    remote_file_path = './../ftp/test.txt' 
+    local_file_path = './../ftp/test.tar.gz'
+    remote_file_path = './../ftp/test.tar.gz' 
     ftp.set_pasv(False)
    
     with open(local_file_path, 'rb') as file:

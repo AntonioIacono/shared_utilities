@@ -2,7 +2,7 @@
 
 # Set up the paths (relatives)
 send_file_ftp="./../ftp/send_file.py"
-file_to_send="./../ftp/test.txt"
+file_to_send="./../ftp/test.tar.gz"
 xmpp_bot="./../xmpp/bot.py"
 xmpp_presence="./../xmpp/presence.py"
 
