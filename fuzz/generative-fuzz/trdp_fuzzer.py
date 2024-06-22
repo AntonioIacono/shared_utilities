@@ -139,7 +139,7 @@ if __name__ == '__main__':
     lifeenabled = True
     checkenabled = True
     life = 0
-    fuzzing_enabled = args.fuzzing
+    fuzzing_enabled = True
     fuzz_fields = args.fuzzfields if args.fuzzfields else []
 
     interfaccia = "ens3"
