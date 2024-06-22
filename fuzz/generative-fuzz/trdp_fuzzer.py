@@ -13,7 +13,7 @@ def calculate_crc(data):
     return zlib.crc32(data) & 0xFFFFFFFF
 
 
-def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset,lifeenabled, checkenabled, life, source_ip):
+def createMessage_fuzz(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip, fuzzing_enabled, fuzz_fields):
     while True:
         sequenceCounter = sequenceCounter + 1
         life = life + 1 if lifeenabled else 1
@@ -21,46 +21,58 @@ def createMessage(ipAddress,port,timeValue, sequenceCounter, protocolVersion, ms
             life = 0
 
         check = 1 if checkenabled else 0
-        value1 = struct.pack('>I',sequenceCounter)
-
-        value4 = struct.pack('>I',comId)
-        value5 = struct.pack('>I',etbTopoCnt)
-        value6 = struct.pack('>I',opTrnTopoCnt)
-    
-        value8 = struct.pack('>I',reserved01)
-        value9 = struct.pack('>I',replyComId)
+        
+        # Fuzzing fields
+        if fuzzing_enabled:
+            if 'sequenceCounter' in fuzz_fields:
+                sequenceCounter = random.randint(0, 2**32 - 1)
+            if 'protocolVersion' in fuzz_fields:
+                protocolVersion = random.randint(0, 2**16 - 1)
+            if 'msgType' in fuzz_fields:
+                msgType = random.randint(0, 2**16 - 1)
+            if 'comId' in fuzz_fields:
+                comId = random.randint(0, 2**32 - 1)
+            if 'etbTopoCnt' in fuzz_fields:
+                etbTopoCnt = random.randint(0, 2**32 - 1)
+            if 'opTrnTopoCnt' in fuzz_fields:
+                opTrnTopoCnt = random.randint(0, 2**32 - 1)
+            if 'reserved01' in fuzz_fields:
+                reserved01 = random.randint(0, 2**32 - 1)
+            if 'replyComId' in fuzz_fields:
+                replyComId = random.randint(0, 2**32 - 1)
+            if 'replyIpAddress' in fuzz_fields:
+                replyIpAddress = '.'.join(str(random.randint(0, 255)) for _ in range(4))
+            if 'dataset' in fuzz_fields:
+                dataset = create_dataset(datasetLength - 2)
+            if 'life' in fuzz_fields:
+                life = random.randint(0, 255)
+        
+        value1 = struct.pack('>I', sequenceCounter)
+        value4 = struct.pack('>I', comId)
+        value5 = struct.pack('>I', etbTopoCnt)
+        value6 = struct.pack('>I', opTrnTopoCnt)
+        value8 = struct.pack('>I', reserved01)
+        value9 = struct.pack('>I', replyComId)
         ipSplit = replyIpAddress.split('.')
-        i = 0
-        array = []
-        for value in ipSplit:
-            array.append(int(value))
-        values_to_pack = [valore for valore in array]
-        #print(array)
-        value10 = struct.pack('B'* len(array), *array)
-            
+        array = [int(value) for value in ipSplit]
+        value10 = struct.pack('B' * len(array), *array)
         
         mettiInsieme = struct.pack('>HH', protocolVersion, msgType)
         while len(dataset) % 8 != 0:
             dataset += '0'
         value12 = struct.pack('B', life)
         value13 = struct.pack('B', check)
-
-        # Convert binary string to bytes
         value14 = bytes(int(dataset[i:i+8], 2) for i in range(0, len(dataset), 8))
         value15 = value12 + value13 + value14
-        value7 = struct.pack('>I',len(value15))
-
-        # Construct the header without the CRC
+        value7 = struct.pack('>I', len(value15))
+        
         header_without_crc = value1 + struct.pack('<H', protocolVersion) + struct.pack('>H', msgType) + value4 + value5 + value6 + value7 + value8 + value9 + value10
-        # Calculate the CRC over the header
-        #headerFcs = fcs32(header_without_crc, 32, headerFcs)
         headerFcs = calculate_crc(header_without_crc)
         value11 = struct.pack('<I', headerFcs)
-
-        # Complete header with CRC and payload
+        
         payload = header_without_crc + value11 + value15
         send_udp_packet(ipAddress, port, payload, source_ip)
-        time.sleep(timeValue/1000)
+        time.sleep(timeValue / 1000)
 
 
 def send_udp_packet(ip_address, port, payload, source_ip):
