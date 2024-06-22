@@ -154,7 +154,7 @@ start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgTy
 ip_multicast = "239.110.1.1"
 port = 17224
 dataset_life = 200
-sequenceCounter = 4035626
+sequenceCounter = 100
 protocolVersion = 1
 msgType = 20580
 comId = 1301

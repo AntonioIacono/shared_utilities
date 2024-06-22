@@ -172,5 +172,5 @@ life = 0
 
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, "172.23.0.27")
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
 
