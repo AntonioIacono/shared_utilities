@@ -184,9 +184,12 @@ lifeenabled = True
 checkenabled = True
 life = 0
 
+fuzzing_enabled = True
+fuzz_fields = args.fuzzfields if args.fuzzfields else []
+
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip,fuzzing_enabled, fuzz_fields)
 
 
 
