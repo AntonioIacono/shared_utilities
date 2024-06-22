@@ -143,6 +143,8 @@ if __name__ == '__main__':
     parser.add_argument('--checkenabled', action='store_true', required=False, help='Enable check field')
     parser.add_argument('--life', dest='life', type=int, default=0, required=False, help='Initial value of field life')
     parser.add_argument('--interface', dest='interface', type=str, default=0, required=False, help='Network interface')
+    parser.add_argument('--fuzzing', action='store_true',required=False, help='Enable fuzzing')
+    parser.add_argument('--fuzzfields', type=str, nargs='+', help='Fields to fuzz')
     args = parser.parse_args()
 
 
