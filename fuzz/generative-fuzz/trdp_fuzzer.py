@@ -76,6 +76,18 @@ def createMessage(ipAddress, port, timeValue, sequenceCounter, protocolVersion, 
         send_udp_packet(ipAddress, port, payload, source_ip)
         time.sleep(timeValue / 1000)
 
+def send_udp_packet(ip_address, port, payload, source_ip):
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_socket.bind((source_ip, 0))
+    try:
+        # Invio del pacchetto UDP
+        udp_socket.sendto(payload, (ip_address, port))
+        #print(f"Packet sent to {ip_address}:{port}")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        # Chiusura del socket
+        udp_socket.close()
 
 def create_dataset(dataset_length):
     num_bits = dataset_length * 8
