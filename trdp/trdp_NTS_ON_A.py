@@ -68,8 +68,8 @@ def send_udp_packet(ip_address, port, payload, source_ip):
     try:
         # Invio del pacchetto UDP
         udp_socket.sendto(payload, (ip_address, port))
-        #print(f"Packet sent to {ip_address}:{port}")
-        print(payload)
+        print(f"Packet sent to {ip_address}:{port}")
+        
     except Exception as e:
         print(f"Error: {e}")
     finally:
