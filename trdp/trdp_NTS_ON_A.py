@@ -150,16 +150,16 @@ start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgTy
 
 #Wait for interfaces set up
 interfaccia_mdcu_A = "ens3" #172.16.2.41
-source_ip_mdcu_A = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+source_ip_mdcu_A = wait_for_interface_ip(interfaccia_mdcu_A, timeout=60, check_interval=1)
 
 interfaccia_mdcu_B = "ens4" #172.16.2.41
-source_ip_mdcu_B = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+source_ip_mdcu_B = wait_for_interface_ip(interfaccia_mdcu_B, timeout=60, check_interval=1)
 
 interfaccia_ena_A = "ens5" #172.16.1.145
-source_ip_mdcu_A = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+source_ip_ena_A = wait_for_interface_ip(interfaccia_ena_A, timeout=60, check_interval=1)
 
 interfaccia_ena_B = "ens6" #172.16.2.145
-source_ip_ena_B = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+source_ip_ena_B = wait_for_interface_ip(interfaccia_ena_B, timeout=60, check_interval=1)
 
 ## Parameters dataset with ComID 40003
 ip_multicast = "239.13.1.1"
@@ -183,7 +183,7 @@ life = 0
 
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip_mdcu_A)
 
 ## Parameters dataset with ComID 20008
 #ip_multicast = "239.13.1.1"
@@ -232,7 +232,7 @@ life = 0
 
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip_ena_A)
 
 ## Parameters dataset with ComID 13030
 ip_multicast = "239.21.1.12"
@@ -256,7 +256,7 @@ life = 0
 
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip_ena_A)
 
 #Unauthorized dataset
 ## Parameters dataset with ComID 40003
@@ -281,7 +281,7 @@ life = 0
 
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip_mdcu_A)
 
 #Unauthorized dataset
 ## Parameters dataset with ComID 40009
@@ -306,11 +306,13 @@ life = 0
 
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip_ena_A)
 
 
-interfaccia = "ens4" #172.16.2.41
-source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+
+##########
+# VLAN B #
+##########
 
 
 ## Parameters dataset with ComID 40003
@@ -335,7 +337,7 @@ life = 0
 
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip_mdcu_B)
 
 
 
@@ -362,7 +364,7 @@ life = 0
 
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip_ena_B)
 
 ## Parameters dataset with ComID 13030
 ip_multicast = "239.21.2.12"
@@ -386,7 +388,7 @@ life = 0
 
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip_ena_B)
 
 #Unauthorized dataset
 ## Parameters dataset with ComID 40003
@@ -411,7 +413,7 @@ life = 0
 
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip_mdcu_B)
 
 #Unauthorized dataset
 ## Parameters dataset with ComID 40009
@@ -436,4 +438,4 @@ life = 0
 
 start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
-            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip_ena_B)
