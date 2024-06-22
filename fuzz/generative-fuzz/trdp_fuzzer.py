@@ -13,7 +13,7 @@ def calculate_crc(data):
     return zlib.crc32(data) & 0xFFFFFFFF
 
 
-def createMessage_fuzz(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip, fuzzing_enabled, fuzz_fields):
+def createMessage(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip, fuzzing_enabled, fuzz_fields):
     while True:
         sequenceCounter = sequenceCounter + 1
         life = life + 1 if lifeenabled else 1
