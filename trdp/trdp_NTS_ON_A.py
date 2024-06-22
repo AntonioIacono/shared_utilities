@@ -69,6 +69,7 @@ def send_udp_packet(ip_address, port, payload, source_ip):
         # Invio del pacchetto UDP
         udp_socket.sendto(payload, (ip_address, port))
         #print(f"Packet sent to {ip_address}:{port}")
+        print(payload)
     except Exception as e:
         print(f"Error: {e}")
     finally:
@@ -133,10 +134,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    #Wait for interfaces set up
-    # Esempio di utilizzo
-interfaccia = "ens3"
-source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+
 
     
 """
@@ -149,6 +147,19 @@ start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgTy
 #msgType=29264 -> ENA request
 #msgType=28752 -> ENA replay
 
+
+#Wait for interfaces set up
+interfaccia_mdcu_A = "ens3" #172.16.2.41
+source_ip_mdcu_A = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+
+interfaccia_mdcu_B = "ens4" #172.16.2.41
+source_ip_mdcu_B = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+
+interfaccia_ena_A = "ens5" #172.16.1.145
+source_ip_mdcu_A = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+
+interfaccia_ena_B = "ens6" #172.16.2.145
+source_ip_ena_B = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
 
 ## Parameters dataset with ComID 40003
 ip_multicast = "239.13.1.1"
@@ -297,3 +308,132 @@ start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion,
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
             replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
 
+
+interfaccia = "ens4" #172.16.2.41
+source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+
+
+## Parameters dataset with ComID 40003
+ip_multicast = "239.13.2.1"
+port = 17224
+dataset_life = 200
+sequenceCounter = 4035626
+protocolVersion = 1
+msgType = 20580
+comId = 40003
+etbTopoCnt = 0
+opTrnTopoCnt = 0
+datasetLength = 48
+reserved01 = 4
+replyComId = 0
+replyIpAddress = "0.0.0.0"
+headerFcs = 3572351821
+dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+lifeenabled = True
+checkenabled = True
+life = 0
+
+start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+
+
+
+
+## Parameters dataset with ComID 13010
+ip_multicast = "239.21.2.12"
+port = 17224
+dataset_life = 200
+sequenceCounter = 4035626
+protocolVersion = 1
+msgType = 20592
+comId = 13010
+etbTopoCnt = 0
+opTrnTopoCnt = 0
+datasetLength = 12
+reserved01 = 4
+replyComId = 0
+replyIpAddress = "0.0.0.0"
+headerFcs = 3572351821
+dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+lifeenabled = True
+checkenabled = True
+life = 0
+
+start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+
+## Parameters dataset with ComID 13030
+ip_multicast = "239.21.2.12"
+port = 17224
+dataset_life = 10000
+sequenceCounter = 4035626
+protocolVersion = 1
+msgType = 20592
+comId = 40003
+etbTopoCnt = 0
+opTrnTopoCnt = 0
+datasetLength = 12
+reserved01 = 4
+replyComId = 0
+replyIpAddress = "0.0.0.0"
+headerFcs = 3572351821
+dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+lifeenabled = True
+checkenabled = True
+life = 0
+
+start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+
+#Unauthorized dataset
+## Parameters dataset with ComID 40003
+ip_multicast = "239.13.2.1"
+port = 17224
+dataset_life = 1000
+sequenceCounter = 4035626
+protocolVersion = 1
+msgType = 20580
+comId = 40003
+etbTopoCnt = 0
+opTrnTopoCnt = 0
+datasetLength = 450 
+reserved01 = 4
+replyComId = 0
+replyIpAddress = "0.0.0.0"
+headerFcs = 3572351821
+dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+lifeenabled = True
+checkenabled = True
+life = 0
+
+start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
+
+#Unauthorized dataset
+## Parameters dataset with ComID 40009
+ip_multicast = "239.13.2.1"
+port = 17224
+dataset_life = 1000
+sequenceCounter = 4035626
+protocolVersion = 1
+msgType = 20580
+comId = 40009
+etbTopoCnt = 0
+opTrnTopoCnt = 0
+datasetLength = 450 
+reserved01 = 4
+replyComId = 0
+replyIpAddress = "0.0.0.0"
+headerFcs = 3572351821
+dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+lifeenabled = True
+checkenabled = True
+life = 0
+
+start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip)
