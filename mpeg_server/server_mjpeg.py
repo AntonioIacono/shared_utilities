@@ -4,7 +4,7 @@ from flask import Flask, Response, request, jsonify
 
 app = Flask(__name__)
 
-VIDEO_DIRECTORY = 'videos/'  # Directory to store uploaded videos
+VIDEO_DIRECTORY = 'videos'  # Directory to store uploaded videos
 
 # Ensure the directory exists
 if not os.path.exists(VIDEO_DIRECTORY):
