@@ -1,6 +1,7 @@
 import os
 import subprocess
 from flask import Flask, Response, request, jsonify
+import logging
 
 app = Flask(__name__)
 
@@ -10,30 +11,38 @@ VIDEO_DIRECTORY = 'videos'  # Directory to store uploaded videos
 if not os.path.exists(VIDEO_DIRECTORY):
     os.makedirs(VIDEO_DIRECTORY)
 
+# Setup basic logging
+logging.basicConfig(level=logging.DEBUG)
+
 @app.route('/upload', methods=['POST'])
 def upload_video():
+    logging.debug("Upload request received")
     if 'video' not in request.files:
+        logging.debug("No video part in the request")
         return jsonify({"message": "No video part in the request"}), 400
 
     file = request.files['video']
     if file.filename == '':
+        logging.debug("No selected file")
         return jsonify({"message": "No selected file"}), 400
 
     file_path = os.path.join(VIDEO_DIRECTORY, file.filename)
+    logging.debug(f"Saving video to {file_path}")
     file.save(file_path)
     return jsonify({"message": "File uploaded successfully", "filename": file.filename}), 200
 
 @app.route('/stream/<filename>')
 def stream_video(filename):
+    logging.debug(f"Stream request received for file: {filename}")
     video_path = os.path.join(VIDEO_DIRECTORY, filename)
 
     if not os.path.exists(video_path):
+        logging.debug("Video not found")
         return jsonify({"message": "Video not found"}), 404
 
     return Response(generate_stream(video_path), mimetype='video/mp4')
 
 def generate_stream(video_path):
-    
     command = [
         'ffmpeg',
         '-stream_loop', '-1',  # Loop indefinitely
@@ -52,13 +61,20 @@ def generate_stream(video_path):
         'pipe:1'
     ]
 
+    logging.debug(f"Starting ffmpeg process with command: {' '.join(command)}")
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    while True:
-        data = process.stdout.read(1024)
-        if not data:
-            break
-        yield data
+    try:
+        while True:
+            data = process.stdout.read(1024)
+            if not data:
+                break
+            yield data
+    except Exception as e:
+        logging.error(f"Error streaming video: {e}")
+    finally:
+        process.kill()
+        logging.debug("ffmpeg process terminated")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
