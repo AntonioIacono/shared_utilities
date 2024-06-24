@@ -4,7 +4,7 @@ from flask import Flask, Response, request, jsonify
 
 app = Flask(__name__)
 
-VIDEO_DIRECTORY = 'videos'  # Directory to store uploaded videos
+VIDEO_DIRECTORY = './videos/'  # Directory to store uploaded videos
 
 # Ensure the directory exists
 if not os.path.exists(VIDEO_DIRECTORY):
@@ -23,7 +23,7 @@ def upload_video():
     file.save(file_path)
     return jsonify({"message": "File uploaded successfully", "filename": file.filename}), 200
 
-@app.route('/stream/<filename>')
+@app.route('videos/<filename>')
 def stream_video(filename):
     video_path = os.path.join(VIDEO_DIRECTORY, filename)
 
