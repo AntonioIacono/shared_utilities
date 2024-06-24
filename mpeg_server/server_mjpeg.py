@@ -23,7 +23,7 @@ def upload_video():
     file.save(file_path)
     return jsonify({"message": "File uploaded successfully", "filename": file.filename}), 200
 
-@app.route('videos/<filename>')
+@app.route('/videos/<filename>')
 def stream_video(filename):
     video_path = os.path.join(VIDEO_DIRECTORY, filename)
 
