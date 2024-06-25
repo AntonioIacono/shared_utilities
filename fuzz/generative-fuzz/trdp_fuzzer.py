@@ -12,6 +12,10 @@ def calculate_crc(data):
     """Calculate CRC32 using the zlib library."""
     return zlib.crc32(data) & 0xFFFFFFFF
 
+def create_dataset(dataset_length):
+    num_bits = dataset_length * 8
+    dataset = ''.join(random.choice('01') for _ in range(num_bits))
+    return dataset
 
 def createMessage(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip, fuzzing_enabled, fuzz_fields):
     while True:
@@ -97,10 +101,7 @@ def start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, m
     thread = threading.Thread(target=createMessage, args=(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip, fuzzing_enabled, fuzz_fields))
     thread.start()
 
-def create_dataset(dataset_length):
-    num_bits = dataset_length * 8
-    dataset = ''.join(random.choice('01') for _ in range(num_bits))
-    return dataset
+
 
 def check_interface_ip(interface):
     try:
