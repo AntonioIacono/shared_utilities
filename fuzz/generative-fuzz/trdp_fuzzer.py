@@ -45,8 +45,8 @@ def createMessage(ipAddress, port, timeValue, sequenceCounter, protocolVersion, 
             if 'replyIpAddress' in fuzz_fields:
                 replyIpAddress = '.'.join(str(random.randint(0, 255)) for _ in range(4))
             if 'dataset' in fuzz_fields:
-                datasetLength2 = random.randint(2**8, 2**32 - 1)
-                dataset2 = create_dataset(datasetLength2 - 2)
+                datasetLength = random.randint(2**8, 2**32 - 1)
+                dataset = create_dataset(datasetLength - 2)
             if 'life' in fuzz_fields:
                 life = random.randint(0, 255)
         
@@ -61,11 +61,11 @@ def createMessage(ipAddress, port, timeValue, sequenceCounter, protocolVersion, 
         value10 = struct.pack('B' * len(array), *array)
         
         
-        while len(dataset2) % 8 != 0:
+        while len(dataset) % 8 != 0:
             dataset += '0'
         value12 = struct.pack('B', life)
         value13 = struct.pack('B', check)
-        value14 = bytes(int(dataset2[i:i+8], 2) for i in range(0, len(dataset2), 8))
+        value14 = bytes(int(dataset[i:i+8], 2) for i in range(0, len(dataset), 8))
         value15 = value12 + value13 + value14
         value7 = struct.pack('>I', len(value15))
         
@@ -153,9 +153,9 @@ if __name__ == '__main__':
 
     #Wait for interfaces set up
     # Esempio di utilizzo
-interfaccia = "ens3"
-source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
-    
+#interfaccia = "ens3"
+#source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
+source_ip="172.16.1.140"    
 """
 start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, 
                 comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
