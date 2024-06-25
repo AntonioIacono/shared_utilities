@@ -222,6 +222,8 @@ def createMessage_fuzz(ipAddress, port, timeValue, sequenceCounter, protocolVers
                 reserved01 = random.randint(0, 2**32 - 1)
             if 'replyComId' in fuzz_fields:
                 replyComId = random.randint(0, 2**32 - 1)
+            if 'datasetLength' in fuzz_fields:
+                datasetLength = random.randint(2**8, 2**64 - 1)
             if 'replyIpAddress' in fuzz_fields:
                 replyIpAddress = '.'.join(str(random.randint(0, 255)) for _ in range(4))
             if 'dataset' in fuzz_fields:
