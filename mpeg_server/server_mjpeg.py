@@ -41,16 +41,17 @@ def generate_stream(video_path):
         '-f', 'mp4',
         '-vcodec', 'libx264',
         '-preset', 'fast',
-        '-r', '15',  # Frame rate
-        '-s', '1280x720',  # Resolution
-        '-b:v', '1M',  # Bitrate (adjust as needed)
-        '-bufsize', '2M',
-        '-pix_fmt', 'yuv420p',
+        #'-r', '15',  # Frame rate
+        #'-s', '1280x720',  # Resolution
+        #'-b:v', '1M',  # Bitrate (adjust as needed)
+        #'-bufsize', '2M',
+        #'-pix_fmt', 'yuv420p',
         '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
         '-an',
         '-sn',
         'pipe:1'
     ]
+
 
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
