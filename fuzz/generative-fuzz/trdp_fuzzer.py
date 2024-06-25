@@ -51,7 +51,7 @@ def createMessage(ipAddress, port, timeValue, sequenceCounter, protocolVersion, 
                 replyIpAddress = '.'.join(str(random.randint(0, 255)) for _ in range(4))
             if 'dataset' in fuzz_fields:
                 print("qui")
-                datasetLength = random.randint(2**8, 2**32 - 1)
+                #datasetLength = random.randint(2**8, 2**32 - 1)
                 dataset = create_dataset(datasetLength - 2)
             if 'life' in fuzz_fields:
                 life = random.randint(0, 255)
