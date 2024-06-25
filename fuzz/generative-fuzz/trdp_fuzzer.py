@@ -55,6 +55,8 @@ def createMessage(ipAddress, port, timeValue, sequenceCounter, protocolVersion, 
                 dataset = create_dataset(datasetLength - 2)
             if 'life' in fuzz_fields:
                 life = random.randint(0, 255)
+            if 'dataset_life' in fuzz_fields:
+                timeValue = random.randint(0, 255)
         
         value1 = struct.pack('>I', sequenceCounter)
         value4 = struct.pack('>I', comId)
