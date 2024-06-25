@@ -36,13 +36,13 @@ def generate_stream(video_path):
     
     command = [
         'ffmpeg',
-        '-stream_loop', '-1',  # Loop indefinitely
+        '-stream_loop', '-1',  # Loop indefinito
         '-i', video_path,
-        '-f', 'mpegts',
-        '-r', '30',  # Frame rate
-        '-b:v', '2M',  # Bitrate
-        '-bufsize', '4M',
-        'pipe:1'
+        '-f', 'avi',           # Formato di output
+        '-vcodec', 'mjpeg',    # Codec video
+        '-r', '30',            # Frame rate
+        '-q:v', '5',           # Qualità del video (1-31, 1 è la migliore qualità)
+        'pipe:1'               # Output su stdout
     ]
 
 
