@@ -38,15 +38,15 @@ def generate_stream(video_path):
         'ffmpeg',
         '-stream_loop', '-1',  # Loop indefinitely
         '-i', video_path,
-        '-f', 'mp4',
-        #'-vcodec', 'libx264',
-        #'-preset', 'fast',
+        '-f', 'mpegts',
+        '-vcodec', 'libx264',
+        '-preset', 'fast',
         '-r', '30',  # Frame rate
         #'-s', '1280x720',  # Resolution
-        #'-b:v', '1M',  # Bitrate (adjust as needed)
-        #'-bufsize', '2M',
+        '-b:v', '2M',  # Bitrate (adjust as needed)
+        '-bufsize', '4M',
         #'-pix_fmt', 'yuv420p',
-        #'-movflags', 'frag_keyframe+empty_moov+default_base_moof',
+        '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
         #'-an',
         #'-sn',
         'pipe:1'
