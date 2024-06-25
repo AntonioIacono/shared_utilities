@@ -39,16 +39,9 @@ def generate_stream(video_path):
         '-stream_loop', '-1',  # Loop indefinitely
         '-i', video_path,
         '-f', 'mpegts',
-        #'-vcodec', 'libx264',
-        #'-preset', 'fast',
         '-r', '30',  # Frame rate
-        #'-s', '1280x720',  # Resolution
-        '-b:v', '2M',  # Bitrate (adjust as needed)
+        '-b:v', '2M',  # Bitrate
         '-bufsize', '4M',
-        #'-pix_fmt', 'yuv420p',
-        '-movflags', 'frag_keyframe+empty_moov+default_base_moof',
-        #'-an',
-        #'-sn',
         'pipe:1'
     ]
 
