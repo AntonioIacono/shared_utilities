@@ -38,7 +38,7 @@ def generate_stream(video_path):
         'ffmpeg',
         '-stream_loop', '-1',  # Loop indefinito
         '-i', video_path,
-        '-f', 'avi',           # Formato di output
+        '-f', 'mkv',           # Formato di output
         '-vcodec', 'mjpeg',    # Codec video
         '-r', '30',            # Frame rate
         '-q:v', '1',           # Qualità del video (1-31, 1 è la migliore qualità)
