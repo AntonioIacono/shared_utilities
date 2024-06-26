@@ -41,7 +41,7 @@ def generate_stream(video_path):
         '-f', 'avi',           # Formato di output
         '-vcodec', 'mjpeg',    # Codec video
         '-r', '30',            # Frame rate
-        '-q:v', '5',           # Qualità del video (1-31, 1 è la migliore qualità)
+        '-q:v', '1',           # Qualità del video (1-31, 1 è la migliore qualità)
         'pipe:1'               # Output su stdout
     ]
 
