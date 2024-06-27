@@ -99,9 +99,13 @@ def send_udp_packet(ip_address, port, payload, source_ip):
         # Chiusura del socket
         udp_socket.close()
 
-def start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip, fuzzing_enabled, fuzz_fields):
-    thread = threading.Thread(target=createMessage, args=(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip, fuzzing_enabled, fuzz_fields))
-    thread.start()
+def start_thread(num_threads,ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip, fuzzing_enabled, fuzz_fields):
+        # Avvio i thread lavoratori
+    for _ in range(num_threads):  # Possiamo regolare il numero di thread a seconda delle esigenze
+        print(f"Threads attivi:  {threading.active_count() - 1}")
+        thread = threading.Thread(target=createMessage, args=(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip, fuzzing_enabled, fuzz_fields))
+        thread.start()
+        time.sleep(0.01)
 
 
 
@@ -153,6 +157,8 @@ if __name__ == '__main__':
     parser.add_argument('--interface', dest='interface', type=str, default=0, required=False, help='Network interface')
     parser.add_argument('--fuzzing', action='store_true',required=False, help='Enable fuzzing')
     parser.add_argument('--fuzzfields', type=str, nargs='+', help='Fields to fuzz')
+    parser.add_argument('--numthreads', dest='numThreads', type=int, default=1, required=False, help='Number of threads')
+
     args = parser.parse_args()
 
 
@@ -160,7 +166,8 @@ if __name__ == '__main__':
     # Esempio di utilizzo
 interfaccia = "ens3"
 source_ip = wait_for_interface_ip(interfaccia, timeout=60, check_interval=1)
-#source_ip="172.16.1.140"    
+#source_ip="172.16.1.140"   
+
 """
 start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, 
                 comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
@@ -175,7 +182,7 @@ start_thread(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgTy
 ## Parameters dataset with ComID 1301
 ip_multicast = "239.110.1.1"
 port = 17224
-dataset_life = 200
+dataset_life = 20
 sequenceCounter = 100
 protocolVersion = 1
 msgType = 20580
@@ -191,11 +198,12 @@ dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
 lifeenabled = True
 checkenabled = True
 life = 0
+numThreads = 5000
 
-fuzzing_enabled = True
+fuzzing_enabled = False
 fuzz_fields = args.fuzzfields if args.fuzzfields else []
 
-start_thread(ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+start_thread(numThreads,ip_multicast, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
             comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
             replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip,fuzzing_enabled, fuzz_fields)
 
