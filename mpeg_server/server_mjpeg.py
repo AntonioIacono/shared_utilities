@@ -38,10 +38,12 @@ def generate_stream(video_path):
         'ffmpeg',
         '-stream_loop', '-1',  # Loop indefinito
         '-i', video_path,
-        '-f', 'mkv',           # Formato di output
+        '-f', 'mjpeg',           # Formato di output
         '-vcodec', 'mjpeg',    # Codec video
-        '-r', '30',            # Frame rate
-        '-q:v', '1',           # Qualità del video (1-31, 1 è la migliore qualità)
+        '-preset', 'fast',     # Preset for encoding speed/quality tradeoff
+        '-tune', 'zerolatency',# Tuning for low latency streaming
+        '-r', '90',            # Frame rate
+        '-q:v', '9',           # Qualità del video (1-31, 1 è la migliore qualità)
         'pipe:1'               # Output su stdout
     ]
 
