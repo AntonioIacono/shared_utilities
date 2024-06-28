@@ -27,5 +27,5 @@ end_int=$(ip_to_int $END_IP)
 for ((i=start_int; i<=end_int; i++)); do
     spoofed_ip=$(int_to_ip $i)
     echo "Spoofing IP: $spoofed_ip"
-    sudo nmap -S $spoofed_ip -p $PORT $TARGET_IP
+    nmap -S $spoofed_ip -p $PORT $TARGET_IP
 done
