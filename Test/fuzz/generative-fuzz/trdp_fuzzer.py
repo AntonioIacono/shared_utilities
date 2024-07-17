@@ -89,6 +89,10 @@ def createMessage(ipAddress, port, timeValue, sequenceCounter, protocolVersion, 
 def send_udp_packet(ip_address, port, payload, source_ip):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp_socket.bind((source_ip, 0))
+
+    # Set the TTL (Time-To-Live)
+    ttl = struct.pack('B', 64)  # unsigned char as 1-byte object
+    udp_socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
     try:
         # Invio del pacchetto UDP
         udp_socket.sendto(payload, (ip_address, port))

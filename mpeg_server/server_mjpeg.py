@@ -26,7 +26,6 @@ def upload_video():
 @app.route('/stream/<filename>')
 def stream_video(filename):
     video_path = os.path.join(VIDEO_DIRECTORY, filename)
-
     if not os.path.exists(video_path):
         return jsonify({"message": "Video not found"}), 404
 
