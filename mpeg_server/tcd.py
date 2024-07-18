@@ -1,11 +1,14 @@
 import threading
 import subprocess
 import socket
+import fcntl
+import struct
 
 # Function that sets up the socket to bind to a specific interface
-def create_bound_socket(interface_ip):
+def create_bound_socket(interface_name):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind((interface_ip, 0))
+    ifname = interface_name.encode('utf-8')
+    fcntl.ioctl(s, 0x8933, struct.pack('256s', ifname[:15]))
     return s
 
 # Command for receiving the stream
@@ -18,8 +21,8 @@ command = [
 ]
 
 # Function that executes the ffmpeg command
-def run_ffmpeg(ffmpeg_command, interface_ip):
-    s = create_bound_socket(interface_ip)
+def run_ffmpeg(ffmpeg_command, interface_name):
+    s = create_bound_socket(interface_name)
     try:
         subprocess.run(ffmpeg_command, check=True)
     except subprocess.CalledProcessError as e:
@@ -27,16 +30,16 @@ def run_ffmpeg(ffmpeg_command, interface_ip):
     finally:
         s.close()
 
-# IP addresses of the interfaces
-interface_ip1 = "172.16.1.200"  # Replace with the IP address of your NIC
-interface_ip2 = "172.16.2.200"  # Replace with the IP address of your NIC
+# Names of the interfaces
+interface_name1 = "ens3"  # Replace with the name of your network interface
+interface_name2 = "ens4"  # Replace with the name of your network interface
 
 # Creating and starting the first thread
-ffmpeg_thread1 = threading.Thread(target=run_ffmpeg, args=(command, interface_ip1))
+ffmpeg_thread1 = threading.Thread(target=run_ffmpeg, args=(command, interface_name1))
 ffmpeg_thread1.start()
 
 # Creating and starting the second thread
-ffmpeg_thread2 = threading.Thread(target=run_ffmpeg, args=(command, interface_ip2))
+ffmpeg_thread2 = threading.Thread(target=run_ffmpeg, args=(command, interface_name2))
 ffmpeg_thread2.start()
 
 # Wait for both threads to finish (optional)
