@@ -6,6 +6,7 @@ import random
 import tkinter as tk
 from tkinter import ttk
 import zlib
+import uuid
 
 # Definizione dei tipi di messaggio
 msgTypes_values_PD = {
@@ -67,6 +68,54 @@ def createMessagePD(ipAddress, port, timeValue, sequenceCounter, protocolVersion
         send_udp_packet(ipAddress, port, payload, source_ip)
         time.sleep(timeValue / 1000)
 
+def createMessageMD(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, replyStatus, sessionID, replyTimeout, sourceUri, destinationUri, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip):
+    while True:
+        sequenceCounter += 1
+        if lifeenabled:
+            life += 1
+            if life == 256:
+                life = 0
+
+        check = 1 if checkenabled else 0
+
+        # Pack the fixed fields
+        value1 = struct.pack('>I', sequenceCounter)
+        value2 = struct.pack('<H', protocolVersion)
+        value3 = struct.pack('>H', msgType)
+        value4 = struct.pack('>I', comId)
+        value5 = struct.pack('>I', etbTopoCnt)
+        value6 = struct.pack('>I', opTrnTopoCnt)
+        value7 = struct.pack('>I', len(dataset))  # datasetLength
+        value8 = struct.pack('>I', replyStatus)
+        sessionId = uuid.uuid4()
+        value9 = struct.pack('>IIII', sessionId)  # sessionId (4 UINT32s)
+        value10 = struct.pack('>I', replyTimeout)
+        value11 = sourceUri.ljust(32, '\x00').encode('ascii')  # sourceUri padded to 32 bytes
+        value12 = destinationUri.ljust(32, '\x00').encode('ascii')  # destinationUri padded to 32 bytes
+
+        value15 = struct.pack('B', life)
+        value16 = struct.pack('B', check)
+        
+        # Pack the dataset (as a series of bytes)
+        value13 = bytes(dataset)
+
+        # Construct the header without the CRC
+        header_without_crc = (value1 + value2 + value3 + value4 + value5 + value6 +
+                              value7 + value8 + value9 + value10 + value11 + value12)
+        
+        # Calculate the CRC over the header
+        headerFcs = calculate_crc(header_without_crc)
+        value14 = struct.pack('<I', headerFcs)
+
+        # Complete the message with CRC and dataset
+        payload = header_without_crc + value14 + value15 + value16 + value13
+
+        # Send the UDP packet
+        send_udp_packet(ipAddress, port, payload, source_ip)
+
+        # Wait before sending the next message
+        time.sleep(timeValue / 1000)
+
 def send_udp_packet(ip_address, port, payload, source_ip):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp_socket.bind((source_ip, 0))
@@ -85,6 +134,10 @@ def send_udp_packet(ip_address, port, payload, source_ip):
 
 def start_thread_PD(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip):
     thread = threading.Thread(target=createMessagePD, args=(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip))
+    thread.start()
+
+def start_thread_MD(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip):
+    thread = threading.Thread(target=createMessageMD, args=(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip))
     thread.start()
 
 def create_dataset(dataset_length):
@@ -159,10 +212,60 @@ def on_submit_PD():
         f"Life: {life}\n"
         f"Source IP: {source_ip}\n"
     )
-
     result_text_pd.insert(tk.END, result + "\n\n")
     # Reset fields after submission (optional)
     # reset_fields()
+
+
+
+def on_submit_MD():
+    ip_destination = ip_entry.get()
+    port = port_entry.get()
+    dataset_life = int(dataset_entry.get())
+    sequenceCounter = int(sequence_cnt_entry.get())
+    protocolVersion = int(version_entry.get())
+    msgType = msgTypes_values_PD[msgType_combobox.get()]
+    comId = int(comid_entry.get())
+    etbTopoCnt = int(etbTopoCnt_entry.get())
+    opTrnTopoCnt = int(opTrnTopoCnt_entry.get())
+    datasetLength = int(datasetLength_entry.get())
+    reserved01 = int(reserved01_entry.get())
+    replyComId = int(replyComId_entry.get())
+    replyIpAddress = replyIpAddress_entry.get()
+    headerFcs = 3572351821
+    dataset = create_dataset(datasetLength - 2) # 2 bytes is for the header
+    life_enabled = life_var.get()
+    check_enabled = check_var.get()
+    life = 0
+    source_ip = source_ip_entry.get()
+
+    start_thread_MD(ip_destination, port, dataset_life, sequenceCounter, protocolVersion, msgType, 
+            comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, 
+            replyIpAddress, headerFcs, dataset, life_enabled, check_enabled, life, source_ip)
+
+    result = (
+        f"ip_destination: {ip_destination}\n"
+        f"port: {port}\n" 
+        f"dataset_life: {dataset_life}\n"
+        f"sequenceCounter: {sequenceCounter}\n"
+        f"protocolVersion: {protocolVersion}\n"
+        f"msgType: {msgType}\n"
+        f"comId: {comId}\n"
+        f"etbTopoCnt: {etbTopoCnt}\n"
+        f"opTrnTopoCnt: {opTrnTopoCnt}\n"
+        f"datasetLength: {datasetLength}\n"
+        f"reserved01: {reserved01}\n"
+        f"replyComId: {replyComId}\n"
+        f"replyIpAddress: {replyIpAddress}\n"
+        f"Life Abilitato: {'Sì' if life_enabled else 'No'}\n"
+        f"Check Abilitato: {'Sì' if check_enabled else 'No'}\n"
+        f"Life: {life}\n"
+        f"Source IP: {source_ip}\n"
+    )
+    result_text_md.insert(tk.END, result + "\n\n")
+    # Reset fields after submission (optional)
+    # reset_fields()
+
 
 # Creazione della finestra principale
 root = tk.Tk()
@@ -381,7 +484,7 @@ check_checkbox = tk.Checkbutton(frameMD_input, text="Check Enabled", variable=ch
 check_checkbox.grid(row=16, columnspan=2, pady=5)
 
 # Submit Button
-submit_button = tk.Button(frameMD_input, text="Invia", command=on_submit)
+submit_button = tk.Button(frameMD_input, text="Invia", command=on_submit_MD)
 submit_button.grid(row=17, columnspan=2, pady=10)
 
 # Result Text
