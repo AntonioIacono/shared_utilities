@@ -67,7 +67,7 @@ def createMessagePD(ipAddress, port, timeValue, sequenceCounter, protocolVersion
         payload = header_without_crc + value11 + value15
         send_udp_packet(ipAddress, port, payload, source_ip)
         time.sleep(timeValue / 1000)
-
+"""
 def createMessageMD(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, replyStatus, sessionID, replyTimeout, sourceUri, destinationUri, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip):
     while True:
         sequenceCounter += 1
@@ -115,7 +115,7 @@ def createMessageMD(ipAddress, port, timeValue, sequenceCounter, protocolVersion
 
         # Wait before sending the next message
         time.sleep(timeValue / 1000)
-
+"""
 def send_udp_packet(ip_address, port, payload, source_ip):
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp_socket.bind((source_ip, 0))
@@ -135,11 +135,11 @@ def send_udp_packet(ip_address, port, payload, source_ip):
 def start_thread_PD(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip):
     thread = threading.Thread(target=createMessagePD, args=(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip))
     thread.start()
-
+"""
 def start_thread_MD(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip):
     thread = threading.Thread(target=createMessageMD, args=(ipAddress, port, timeValue, sequenceCounter, protocolVersion, msgType, comId, etbTopoCnt, opTrnTopoCnt, datasetLength, reserved01, replyComId, replyIpAddress, headerFcs, dataset, lifeenabled, checkenabled, life, source_ip))
     thread.start()
-
+"""
 def create_dataset(dataset_length):
     num_bits = dataset_length * 8
     dataset = ''.join(random.choice('01') for _ in range(num_bits))
@@ -216,8 +216,7 @@ def on_submit_PD():
     # Reset fields after submission (optional)
     # reset_fields()
 
-
-
+"""
 def on_submit_MD():
     ip_destination = ip_entry.get()
     port = port_entry.get()
@@ -265,7 +264,7 @@ def on_submit_MD():
     result_text_md.insert(tk.END, result + "\n\n")
     # Reset fields after submission (optional)
     # reset_fields()
-
+"""
 
 # Creazione della finestra principale
 root = tk.Tk()
@@ -278,8 +277,8 @@ main_frame.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
 # Configurazione della griglia del main_frame
 main_frame.columnconfigure(0, weight=1)
 main_frame.columnconfigure(1, weight=1)
-main_frame.columnconfigure(2, weight=1)
-main_frame.columnconfigure(3, weight=1)
+#main_frame.columnconfigure(2, weight=1)
+#main_frame.columnconfigure(3, weight=1)
 main_frame.rowconfigure(0, weight=1)
 
 # Creazione dei frame per i dati di input e risultati
@@ -289,11 +288,11 @@ framePD_input.grid(row=0, column=0, padx=10, pady=10, sticky='nsew')
 result_text_pd = tk.Text(main_frame, height=20, width=40)
 result_text_pd.grid(row=0, column=1, padx=10, pady=10, sticky='nsew')
 
-frameMD_input = tk.Frame(main_frame)
-frameMD_input.grid(row=0, column=2, padx=10, pady=10, sticky='nsew')
+#frameMD_input = tk.Frame(main_frame)
+#frameMD_input.grid(row=0, column=2, padx=10, pady=10, sticky='nsew')
 
-result_text_md = tk.Text(main_frame, height=20, width=40)
-result_text_md.grid(row=0, column=3, padx=10, pady=10, sticky='nsew')
+#result_text_md = tk.Text(main_frame, height=20, width=40)
+#result_text_md.grid(row=0, column=3, padx=10, pady=10, sticky='nsew')
 
 
 
@@ -398,7 +397,7 @@ result_text_pd.grid(row=0, column=1, padx=10, pady=10, sticky='nsew')
 ################
 # MESSAGE DATA #
 ################
-
+"""
 # Titolo sopra i campi di input
 tk.Label(frameMD_input, text="Message Data", font=("Helvetica", 16)).grid(row=0, column=0, columnspan=2, padx=10, pady=5, sticky='w')
 
@@ -490,6 +489,8 @@ submit_button.grid(row=17, columnspan=2, pady=10)
 # Result Text
 result_text_pd = tk.Text(main_frame, height=20, width=40)
 result_text_pd.grid(row=0, column=1, padx=10, pady=10, sticky='nsew')
+
+"""
 
 
 # Start the main loop
